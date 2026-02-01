@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form th:action="@{/servicios/guardar}" th:object="${servicio}" method="post">
+    <input th:field="*{numeroOrden}" placeholder="Solped" />
+    <input th:field="*{fechaHoraAgendamiento}" type="datetime-local" />
+    <select th:field="*{tiposervicio.idTipoServicio}">
+        <option th:each="tipo : ${tipos}" 
+                th:value="${tipo.idTipoServicio}" 
+                th:text="${tipo.nombre}"></option>
+        
+    </select>
+    <!-- Lista dinámica para detalles (materiales) con JS o múltiples campos -->
+    <button type="submit">Registrar Solicitud</button>
+</form>
+    </body>
+</html>
