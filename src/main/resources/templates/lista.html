@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head}">
+    <title>Servicios</title>
+</head>
+<body>
+    <nav th:replace="~{fragments :: menu}"></nav>
+    
+    <div class="container mt-4">
+        <div th:replace="~{fragments :: mensajes}"></div>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Servicios</h1>
+            <a th:href="@{/servicios/nuevo}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Servicio
+            </a>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Orden</th>
+                        <th>Cliente</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="servicio : ${servicios}">
+                        <td th:text="${servicio.numeroOrden}"></td>
+                        <td th:text="${servicio.cliente.nombre}"></td>
+                        <td th:text="${servicio.tipoServicio.nombre}"></td>
+                        <td th:text="${#temporals.format(servicio.fechaHoraAgendamiento, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span th:class="|badge bg-${servicio.estado == 'PENDIENTE' ? 'warning' : 
+                                                     servicio.estado == 'EN_PROGRESO' ? 'info' : 
+                                                     servicio.estado == 'FINALIZADO' ? 'success' : 'secondary'}|
+                                  " th:text="${servicio.estado}"></span>
+                        </td>
+                        <td>
+                            <a th:href="@{/servicios/{id}(id=${servicio.idServicio})}" 
+                               class="btn btn-sm btn-info">
+                                Ver
+                            </a>
+                            <a th:href="@{/servicios/nuevo?id={id}(id=${servicio.idServicio})}" 
+                               class="btn btn-sm btn-warning" 
+                               th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE'}">
+                                Editar
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

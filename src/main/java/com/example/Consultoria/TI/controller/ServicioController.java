@@ -1,48 +1,77 @@
 package com.example.Consultoria.TI.controller;
 
-import org.springframework.ui.Model;
-import com.example.Consultoria.TI.modelo.Servicio;
-import com.example.Consultoria.TI.service.ServicioService;
+import com.example.Consultoria.TI.modelo.*;
+import com.example.Consultoria.TI.repository.ClienteRepository;
+import com.example.Consultoria.TI.repository.TecnicoRepository;
+import com.example.Consultoria.TI.repository.TipoServicioRepository;
+import com.example.Consultoria.TI.service.*;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/**
- *
- * Sandoval
- */
-       @Controller
-
+@Controller
+@RequestMapping("/servicios")
+@RequiredArgsConstructor
 public class ServicioController {
-    @Autowired
-    private ServicioService service;
-
-    @GetMapping("/servicios/nuevo")
-    public String nuevoServicio(Model model, HttpSession session) {
-        // Verificar rol Cliente o Admin
-        model.addAttribute("servicio", new Servicio());
-        // Cargar listas para dropdowns: tipos, tecnicos
+    
+    private final ServicioService servicioService;
+    private final ClienteRepository clienteRepository;
+    private final TecnicoRepository tecnicoRepository;
+    private final TipoServicioRepository tipoServicioRepository;
+    
+    @GetMapping
+    public String listar(Model model, HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null) return "redirect:/login";
+        
+        model.addAttribute("servicios", servicioService.findAll());
+        model.addAttribute("usuario", usuario);
+        return "servicios/lista";
+    }
+    
+    @GetMapping("/nuevo")
+    public String nuevoForm(Model model, HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null) return "redirect:/login";
+        
+        model.addAttribute("servicio", Servicio.builder()
+            .estado("PENDIENTE")
+            .cliente(usuario.getCliente())
+            .build());
+        model.addAttribute("clientes", clienteRepository.findAll());
+        model.addAttribute("tecnicos", tecnicoRepository.findAll());
+        model.addAttribute("tipos", tipoServicioRepository.findAll());
+        
         return "servicios/formulario";
     }
-
-    @PostMapping("/servicios/guardar")
-    public String guardar(@ModelAttribute Servicio servicio) {
-        service.guardarServicio(servicio); // Incluye detalles/comentarios
-        return "redirect:/servicios/lista";
+    
+    @PostMapping
+    public String guardar(@ModelAttribute Servicio servicio, 
+                         HttpSession session,
+                         RedirectAttributes redirect) {
+        servicioService.save(servicio);
+        redirect.addFlashAttribute("exito", "Servicio guardado exitosamente");
+        return "redirect:/servicios";
     }
-
-    @PostMapping("/servicios/cambiarEstado/{id}")
-    public String cambiarEstado(@PathVariable Long id, @RequestParam String nuevoEstado, @RequestParam String comentario, HttpSession session) {
-        // Verificar rol Soporte
-        service.cambiarEstado(id, nuevoEstado, comentario);
-        return "redirect:/servicios/lista";
+    
+    @GetMapping("/{id}")
+    public String ver(@PathVariable Long id, Model model, HttpSession session) {
+        Servicio servicio = servicioService.findById(id);
+        model.addAttribute("servicio", servicio);
+        return "servicios/ver";
     }
-
-    // Rutas para lista, edición, reclamos, presupuestos (imprimir: return view con datos para PDF)
+    
+    @PostMapping("/{id}/estado")
+    public String cambiarEstado(@PathVariable Long id,
+                               @RequestParam String estado,
+                               @RequestParam(required = false) String comentario,
+                               HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        servicioService.cambiarEstado(id, estado, comentario, usuario);
+        return "redirect:/servicios/" + id;
+    }
 }
 

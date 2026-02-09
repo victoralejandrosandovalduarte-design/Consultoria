@@ -1,37 +1,32 @@
-
 package com.example.Consultoria.TI.modelo;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import java.util.Date;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
 
-/**
- *
- * Sandoval
- */
-@Data
 @Entity
-
+@Table(name = "comentario")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Comentario {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    
     private Long idComentario;
-    private String texto;
-    private Date fecha;
     
-    @ManyToOne
+    @Lob
+    private String texto;
+    
+    @Builder.Default
+    private LocalDateTime fecha = LocalDateTime.now();
+    
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idServicio")
     private Servicio servicio;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idUsuario")
-    private Usuario usuario; // Quien comenta (Soporte/Cliente)   
-   
-    
+    private Usuario usuario;
 }
