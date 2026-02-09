@@ -1,34 +1,30 @@
 package com.example.Consultoria.TI.modelo;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.*;
 
-/**
- *
- * Sandoval
- */
-
-
-@Data
 @Entity
+@Table(name = "usuario")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Usuario {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    
+    @Column(name = "id_usuario")
     private Long idUsuario;
+    
+    @Column(unique = true, nullable = false)
     private String email;
+    
     private String clave;
-    private String rol; //  "Admin", "Soporte", "Cliente"
-    private Boolean estado; //Activo/Inactivo
+    private String rol;
+    private Boolean estado;
     
-    
-    @OneToOne
-    @JoinColumn(name= "idCliente", unique = true)
+    // CAMBIA CascadeType.ALL por CascadeType.MERGE
+    @OneToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "id_cliente")
     private Cliente cliente;
-    
-    }
+}

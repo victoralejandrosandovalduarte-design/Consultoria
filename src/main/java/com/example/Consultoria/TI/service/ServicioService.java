@@ -1,48 +1,117 @@
 package com.example.Consultoria.TI.service;
 
-import com.example.Consultoria.TI.modelo.Servicio;
-import com.example.Consultoria.TI.repository.ServicioRepository;
+import com.example.Consultoria.TI.modelo.*;
+import com.example.Consultoria.TI.repository.*;
 import jakarta.transaction.Transactional;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- *
- * Sandoval
- */
 @Service
+@RequiredArgsConstructor
 public class ServicioService {
-    @Autowired
-    private ServicioRepository repository; // inyecta el repositor
     
-    @Transactional // Se usa esta anotación para inserciòn atómica en cabecera-detalle
-    public void guardarServicio(Servicio servicio){
-        //Logica; asignar técnico, calcular presupuesto...
-        repository.save(servicio);
+    private final ServicioRepository servicioRepository;
+    private final ComentarioRepository comentarioRepository;
+    private final ClienteRepository clienteRepository;
+    private final TecnicoRepository tecnicoRepository;
+    private final TipoServicioRepository tipoServicioRepository;
+    private final MaterialRepository materialRepository;
+    private final DetalleServicioRepository detalleServicioRepository;
+    
+    // Métodos CRUD básicos
+    public List<Servicio> findAll() {
+        return servicioRepository.findAll();
     }
     
-    public void cambiarEstado(Long id, String nuevoEstado, String comentario){
-    Servicio servicio = repository.findById(id).orElseThrow();
-    // Agregar comentario si no finalizada
-    if (!"FINALIZADA".equals(nuevoEstado)){
-    //Crar y agregar comentario
+    public Servicio findById(Long id) {
+        return servicioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
     }
-    repository.save(servicio);
-    // Métodos para promociones, descuentos, reclamos, impresión
-    }
+    
+    @Transactional
     public Servicio save(Servicio servicio) {
-        return repository.save(servicio);  // ahora compila
+        return servicioRepository.save(servicio);
     }
-
-    public Optional<Servicio> findById(Long id) {
-        return repository.findById(id);  // ahora compila
+    
+    @Transactional
+    public void delete(Long id) {
+        servicioRepository.deleteById(id);
     }
-
-    public Servicio update(Servicio servicio) {
-        return repository.save(servicio);  // save también sirve para update
+    
+    // Métodos de consulta por estado
+    public List<Servicio> findByEstado(String estado) {
+        return servicioRepository.findByEstado(estado);
     }
-
-    // 
-    //REVISAAR!!!!!
+    
+    // Método para obtener servicios por cliente 
+    public List<Servicio> obtenerServiciosPorCliente(Long idCliente) {
+        return servicioRepository.findByClienteIdCliente(idCliente);
     }
+    
+    // Método para obtener servicios por técnico
+    public List<Servicio> obtenerServiciosPorTecnico(Long idTecnico) {
+        // Primero, verifica si el técnico existe
+        Tecnico tecnico = tecnicoRepository.findById(idTecnico)
+            .orElseThrow(() -> new RuntimeException("Técnico no encontrado"));
+        
+        // Luego, busca los servicios asignados a ese técnico
+        return servicioRepository.findByTecnicoAsignadoIdTecnico(idTecnico);
+    }
+    
+    // Métodos auxiliares para estadísticas
+    public long countTotalServicios() {
+        return servicioRepository.count();
+    }
+    
+    public long countServiciosByEstado(String estado) {
+        return servicioRepository.countByEstado(estado);
+    }
+    
+    public long countServiciosPorCliente(Long idCliente) {
+        return servicioRepository.countByClienteIdCliente(idCliente);
+    }
+    
+    public long countServiciosPorTecnico(Long idTecnico) {
+        return servicioRepository.countByTecnicoAsignadoIdTecnico(idTecnico);
+    }
+    
+    // Método para cambiar estado
+    @Transactional
+    public Servicio cambiarEstado(Long id, String nuevoEstado, String comentarioTexto, Usuario usuario) {
+        Servicio servicio = findById(id);
+        servicio.setEstado(nuevoEstado);
+        
+        if (comentarioTexto != null && !comentarioTexto.trim().isEmpty()) {
+            Comentario comentario = Comentario.builder()
+                .texto("Estado cambiado a " + nuevoEstado + ": " + comentarioTexto)
+                .fecha(LocalDateTime.now())
+                .servicio(servicio)
+                .usuario(usuario)
+                .build();
+            
+            comentarioRepository.save(comentario);
+            servicio.addComentario(comentario);
+        }
+        
+        return servicioRepository.save(servicio);
+    }
+    
+    // Métodos para dropdowns
+    public List<Cliente> obtenerTodosClientes() {
+        return clienteRepository.findAll();
+    }
+    
+    public List<Tecnico> obtenerTodosTecnicos() {
+        return tecnicoRepository.findAll();
+    }
+    
+    public List<TipoServicio> obtenerTodosTiposServicio() {
+        return tipoServicioRepository.findAll();
+    }
+    
+    public List<Material> obtenerTodosMateriales() {
+        return materialRepository.findAll();
+    }
+}

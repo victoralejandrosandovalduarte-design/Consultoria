@@ -1,22 +1,91 @@
 <!DOCTYPE html>
-<html>
-    <head>
-      
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <form th:action="@{/servicios/guardar}" th:object="${servicio}" method="post">
-    <input th:field="*{numeroOrden}" placeholder="Solped" />
-    <input th:field="*{fechaHoraAgendamiento}" type="datetime-local" />
-    <select th:field="*{tiposervicio.idTipoServicio}">
-        <option th:each="tipo : ${tipos}" 
-                th:value="${tipo.idTipoServicio}" 
-                th:text="${tipo.nombre}"></option>
-        
-    </select>
-    <!-- Lista dinámica para detalles (materiales) con JS o múltiples campos -->
-    <button type="submit">Registrar Solicitud</button>
-</form>
-    </body>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head}">
+    <title>Formulario de Servicio</title>
+</head>
+<body>
+    <nav th:replace="~{fragments :: menu}"></nav>
+    
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" th:text="${servicio.idServicio} ? 'Editar Servicio' : 'Nuevo Servicio'">
+                            Formulario de Servicio
+                        </h3>
+                    </div>
+                    
+                    <form th:action="@{/servicios}" th:object="${servicio}" method="post" class="card-body">
+                        <input type="hidden" th:field="*{idServicio}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Número de Orden</label>
+                            <input type="text" th:field="*{numeroOrden}" class="form-control" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha Agendamiento</label>
+                                <input type="datetime-local" th:field="*{fechaHoraAgendamiento}" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tiempo Estimado (horas)</label>
+                                <input type="number" th:field="*{tiempoEstimado}" class="form-control" min="1" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cliente</label>
+                                <select th:field="*{cliente.idCliente}" class="form-select" required>
+                                    <option value="">Seleccionar cliente</option>
+                                    <option th:each="cliente : ${clientes}"
+                                            th:value="${cliente.idCliente}"
+                                            th:text="${cliente.nombre + ' ' + cliente.apellido}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Técnico</label>
+                                <select th:field="*{tecnicoAsignado.idTecnico}" class="form-select">
+                                    <option value="">Sin asignar</option>
+                                    <option th:each="tecnico : ${tecnicos}"
+                                            th:value="${tecnico.idTecnico}"
+                                            th:text="${tecnico.nombre}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Servicio</label>
+                            <select th:field="*{tipoServicio.idTipoServicio}" class="form-select" required>
+                                <option value="">Seleccionar tipo</option>
+                                <option th:each="tipo : ${tipos}"
+                                        th:value="${tipo.idTipoServicio}"
+                                        th:text="${tipo.nombre}">
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select th:field="*{estado}" class="form-select">
+                                <option value="PENDIENTE">PENDIENTE</option>
+                                <option value="EN_PROGRESO">EN PROGRESO</option>
+                                <option value="FINALIZADO">FINALIZADO</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                            <a th:href="@{/servicios}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 </html>

@@ -1,24 +1,20 @@
 package com.example.Consultoria.TI.modelo;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.*;
 
-/**
- *
- * Sandoval
- */
-
-    @Data
-    @Entity
-    
+@Entity
+@Table(name = "tipo_servicio")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder  // ¡FALTABA ESTA ANOTACIÓN!
 public class TipoServicio {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idTipoServicio;
-    private String nombre; //"consultoría, Redes, Hardware"
-    private Boolean certificada; // Para capacitaciones
     
+    private String nombre;
+    private Boolean certificada;
 }
