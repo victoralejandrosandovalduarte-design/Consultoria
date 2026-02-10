@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head}">
+    <title th:text="${cliente.idCliente} ? 'Editar Cliente' : 'Nuevo Cliente'"></title>
+</head>
+<body>
+    <nav th:replace="~{fragments :: menu}"></nav>
+    
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" th:text="${cliente.idCliente} ? 'Editar Cliente' : 'Nuevo Cliente'">
+                            Formulario de Cliente
+                        </h3>
+                    </div>
+                    
+                    <form th:action="@{/clientes}" th:object="${cliente}" method="post" class="card-body">
+                        <input type="hidden" th:field="*{idCliente}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre *</label>
+                                <input type="text" th:field="*{nombre}" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Apellido</label>
+                                <input type="text" th:field="*{apellido}" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Empresa *</label>
+                            <input type="text" th:field="*{empresa}" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">CI/RUC *</label>
+                            <input type="text" th:field="*{ciRuc}" class="form-control" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ciudad</label>
+                                <select th:field="*{ciudad}" class="form-select">
+                                    <option value="">Seleccionar ciudad</option>
+                                    <option value="Quito">Quito</option>
+                                    <option value="Guayaquil">Guayaquil</option>
+                                    <option value="Cuenca">Cuenca</option>
+                                    <option value="Ambato">Ambato</option>
+                                    <option value="Manta">Manta</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Lugar de Mantenimiento</label>
+                                <input type="text" th:field="*{lugarMantenimiento}" class="form-control" 
+                                       placeholder="Ej: Oficina Central, Sucursal Norte">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a th:href="@{/clientes}" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <span th:text="${cliente.idCliente} ? 'Actualizar' : 'Guardar'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

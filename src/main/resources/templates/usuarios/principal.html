@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Principal - Consultoría TI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            min-height: 100vh;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .user-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .bg-primary-light { background-color: rgba(67, 97, 238, 0.1); color: var(--primary-color); }
+        .bg-success-light { background-color: rgba(76, 201, 240, 0.1); color: var(--success-color); }
+        .bg-warning-light { background-color: rgba(247, 37, 133, 0.1); color: var(--warning-color); }
+        .bg-info-light { background-color: rgba(72, 187, 120, 0.1); color: #48bb78; }
+        
+        .recent-activity {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .quick-actions .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-actions .btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .welcome-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.3);
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .role-admin { background-color: var(--warning-color); }
+        .role-soporte { background-color: var(--success-color); }
+        .role-cliente { background-color: #48bb78; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 col-lg-2 p-0 sidebar">
+                <div class="logo text-center">
+                    <h3><i class="bi bi-gear-fill"></i> TI Consult</h3>
+                    <small>Sistema de Gestión</small>
+                </div>
+                
+                <nav class="nav flex-column mt-4">
+                    <a class="nav-link active" th:href="@{/principal}">
+                        <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                    
+                    <!-- Opciones según rol -->
+                    <div th:if="${session.usuario.rol == 'ADMIN'}">
+                        <a class="nav-link" th:href="@{/usuarios}">
+                            <i class="bi bi-people-fill"></i> Usuarios
+                        </a>
+                        <a class="nav-link" th:href="@{/servicios}">
+                            <i class="bi bi-tools"></i> Todos los Servicios
+                        </a>
+                        <a class="nav-link" th:href="@{/tecnicos}">
+                            <i class="bi bi-person-badge"></i> Técnicos
+                        </a>
+                        <a class="nav-link" th:href="@{/reportes}">
+                            <i class="bi bi-bar-chart-fill"></i> Reportes
+                        </a>
+                    </div>
+                    
+                    <div th:if="${session.usuario.rol == 'SOPORTE'}">
+                        <a class="nav-link" th:href="@{/servicios}">
+                            <i class="bi bi-tools"></i> Mis Servicios
+                        </a>
+                        <a class="nav-link" th:href="@{/servicios/nuevo}">
+                            <i class="bi bi-plus-circle"></i> Nuevo Servicio
+                        </a>
+                        <a class="nav-link" th:href="@{/servicios/pendientes}">
+                            <i class="bi bi-clock-history"></i> Pendientes
+                            <span class="badge bg-warning float-end" th:text="${serviciosPendientes}">0</span>
+                        </a>
+                    </div>
+                    
+                    <div th:if="${session.usuario.rol == 'CLIENTE'}">
+                        <a class="nav-link" th:href="@{/servicios}">
+                            <i class="bi bi-tools"></i> Mis Servicios
+                        </a>
+                        <a class="nav-link" th:href="@{/servicios/nuevo}">
+                            <i class="bi bi-plus-circle"></i> Solicitar Servicio
+                        </a>
+                        <a class="nav-link" th:href="@{/perfil}">
+                            <i class="bi bi-person-circle"></i> Mi Perfil
+                        </a>
+                    </div>
+                    
+                    <!-- Opciones comunes -->
+                    <a class="nav-link" th:href="@{/servicios}">
+                        <i class="bi bi-list-task"></i> Servicios
+                    </a>
+                    
+                    <div class="mt-5 pt-5 border-top border-white-10">
+                        <a class="nav-link" th:href="@{/perfil}">
+                            <i class="bi bi-gear"></i> Configuración
+                        </a>
+                        <a class="nav-link text-danger" th:href="@{/usuarios/logout}">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 col-lg-10 main-content">
+                <!-- Welcome Section -->
+                <div class="welcome-section">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 fw-bold mb-3">
+                                Bienvenido, <span th:text="${session.usuario.cliente != null} ? ${session.usuario.cliente.nombre} : ${session.usuario.email}"></span>
+                                <span class="role-badge" 
+                                      th:classappend="${session.usuario.rol == 'ADMIN'} ? 'role-admin' :
+                                                        ${session.usuario.rol == 'SOPORTE'} ? 'role-soporte' : 'role-cliente'"
+                                      th:text="${session.usuario.rol}">
+                                </span>
+                            </h1>
+                            <p class="mb-0">
+                                <i class="bi bi-calendar-check"></i> 
+                                <span th:text="${#temporals.format(#temporals.createToday(), 'EEEE, d MMMM yyyy')}"></span>
+                                • Último acceso: Hoy
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <img src="https://ui-avatars.com/api/?name=${session.usuario.email}&background=random&color=fff&size=100" 
+                                 th:src="@{'https://ui-avatars.com/api/?name=' + ${session.usuario.email} + '&background=random&color=fff&size=100'}"
+                                 class="rounded-circle border border-3 border-white"
+                                 width="80" 
+                                 alt="Avatar">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-primary-light">
+                                <i class="bi bi-tools"></i>
+                            </div>
+                            <h3 th:text="${totalServicios != null} ? ${totalServicios} : '0'">0</h3>
+                            <p class="text-muted mb-0">Total Servicios</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-warning-light">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <h3 th:text="${serviciosPendientes != null} ? ${serviciosPendientes} : '0'">0</h3>
+                            <p class="text-muted mb-0">Pendientes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-success-light">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <h3 th:text="${serviciosCompletados != null} ? ${serviciosCompletados} : '0'">0</h3>
+                            <p class="text-muted mb-0">Completados</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-info-light">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <h3 th:text="${totalClientes != null} ? ${totalClientes} : '0'">0</h3>
+                            <p class="text-muted mb-0">Clientes Activos</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="user-card">
+                            <h4 class="mb-4"><i class="bi bi-lightning-charge text-warning"></i> Acciones Rápidas</h4>
+                            <div class="quick-actions">
+                                <div class="row">
+                                    <div th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE'}" class="col-md-3 mb-2">
+                                        <a th:href="@{/servicios/nuevo}" class="btn btn-primary w-100">
+                                            <i class="bi bi-plus-circle"></i> Nuevo Servicio
+                                        </a>
+                                    </div>
+                                    
+                                    <div th:if="${session.usuario.rol == 'ADMIN'}" class="col-md-3 mb-2">
+                                        <a th:href="@{/usuarios/nuevo}" class="btn btn-success w-100">
+                                            <i class="bi bi-person-plus"></i> Nuevo Usuario
+                                        </a>
+                                    </div>
+                                    
+                                    <div th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE'}" class="col-md-3 mb-2">
+                                        <a th:href="@{/servicios/pendientes}" class="btn btn-warning w-100">
+                                            <i class="bi bi-clock"></i> Ver Pendientes
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="col-md-3 mb-2">
+                                        <a th:href="@{/servicios}" class="btn btn-info w-100">
+                                            <i class="bi bi-list-check"></i> Ver Todos
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity & User Info -->
+                <div class="row">
+                    <!-- Recent Activity -->
+                    <div class="col-md-8 mb-4">
+                        <div class="recent-activity">
+                            <h4 class="mb-4"><i class="bi bi-activity text-primary"></i> Actividad Reciente</h4>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon bg-primary-light">
+                                    <i class="bi bi-person-check text-primary"></i>
+                                </div>
+                                <div>
+                                    <strong>Sesión iniciada</strong>
+                                    <p class="mb-0 text-muted small">Has iniciado sesión en el sistema</p>
+                                </div>
+                                <div class="ms-auto text-muted small">
+                                    Hoy
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon bg-success-light">
+                                    <i class="bi bi-bell text-success"></i>
+                                </div>
+                                <div>
+                                    <strong>Bienvenido al sistema</strong>
+                                    <p class="mb-0 text-muted small">Tu cuenta está activa y lista para usar</p>
+                                </div>
+                                <div class="ms-auto text-muted small">
+                                    Hoy
+                                </div>
+                            </div>
+                            
+                            <!-- Actividad según rol -->
+                            <div th:if="${session.usuario.rol == 'CLIENTE'}" class="activity-item">
+                                <div class="activity-icon bg-info-light">
+                                    <i class="bi bi-tools text-info"></i>
+                                </div>
+                                <div>
+                                    <strong>Puedes solicitar servicios</strong>
+                                    <p class="mb-0 text-muted small">Haz clic en "Solicitar Servicio" para comenzar</p>
+                                </div>
+                                <div class="ms-auto text-muted small">
+                                    Ahora
+                                </div>
+                            </div>
+                            
+                            <div th:if="${session.usuario.rol == 'SOPORTE'}" class="activity-item">
+                                <div class="activity-icon bg-warning-light">
+                                    <i class="bi bi-clock-history text-warning"></i>
+                                </div>
+                                <div>
+                                    <strong>Servicios pendientes</strong>
+                                    <p class="mb-0 text-muted small">Tienes servicios asignados que requieren atención</p>
+                                </div>
+                                <div class="ms-auto text-muted small">
+                                    Reciente
+                                </div>
+                            </div>
+                            
+                            <div th:if="${session.usuario.rol == 'ADMIN'}" class="activity-item">
+                                <div class="activity-icon bg-danger-light">
+                                    <i class="bi bi-shield-check text-danger"></i>
+                                </div>
+                                <div>
+                                    <strong>Acceso completo habilitado</strong>
+                                    <p class="mb-0 text-muted small">Tienes acceso a todas las funcionalidades del sistema</p>
+                                </div>
+                                <div class="ms-auto text-muted small">
+                                    Hoy
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <a th:href="@{/servicios}" class="btn btn-outline-primary btn-sm">
+                                    Ver toda la actividad <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Info -->
+                    <div class="col-md-4 mb-4">
+                        <div class="user-card">
+                            <h4 class="mb-4"><i class="bi bi-person-circle text-primary"></i> Información de Cuenta</h4>
+                            
+                            <div class="mb-3">
+                                <strong><i class="bi bi-envelope"></i> Email:</strong>
+                                <p th:text="${session.usuario.email}" class="mb-2"></p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong><i class="bi bi-person-badge"></i> Rol:</strong>
+                                <p>
+                                    <span th:text="${session.usuario.rol}" 
+                                          th:class="${session.usuario.rol == 'ADMIN'} ? 'badge bg-danger' :
+                                                        ${session.usuario.rol == 'SOPORTE'} ? 'badge bg-warning' : 'badge bg-success'">
+                                    </span>
+                                </p>
+                            </div>
+                            
+                            <div th:if="${session.usuario.cliente != null}" class="mb-3">
+                                <strong><i class="bi bi-building"></i> Empresa:</strong>
+                                <p th:text="${session.usuario.cliente.empresa}" class="mb-2"></p>
+                            </div>
+                            
+                            <div th:if="${session.usuario.cliente != null}" class="mb-3">
+                                <strong><i class="bi bi-geo-alt"></i> Ciudad:</strong>
+                                <p th:text="${session.usuario.cliente.ciudad}" class="mb-2"></p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong><i class="bi bi-toggle-on"></i> Estado:</strong>
+                                <p>
+                                    <span th:if="${session.usuario.estado}" class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Activo
+                                    </span>
+                                    <span th:unless="${session.usuario.estado}" class="badge bg-danger">
+                                        <i class="bi bi-x-circle"></i> Inactivo
+                                    </span>
+                                </p>
+                            </div>
+                            
+                            <div class="mt-4 pt-3 border-top">
+                                <a th:href="@{/perfil}" class="btn btn-outline-primary w-100 mb-2">
+                                    <i class="bi bi-pencil-square"></i> Editar Perfil
+                                </a>
+                                <a th:href="@{/usuarios/logout}" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <footer class="mt-5 pt-4 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="text-muted">
+                                <i class="bi bi-gear-fill"></i> Sistema de Consultoría TI v1.0
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <p class="text-muted">
+                                <i class="bi bi-c-circle"></i> 2024 - 
+                                <span th:text="${#temporals.format(#temporals.createToday(), 'yyyy')}"></span>
+                                | Desarrollado con Spring Boot
+                            </p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Hora actual
+        function updateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleDateString('es-ES', options);
+        }
+        
+        // Actualizar cada segundo
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Notificación de bienvenida
+        document.addEventListener('DOMContentLoaded', function() {
+            const userRole = '[[${session.usuario.rol}]]';
+            const welcomeMessages = {
+                'ADMIN': 'Bienvenido Administrador, tienes acceso completo al sistema.',
+                'SOPORTE': 'Bienvenido Soporte Técnico, puedes gestionar servicios asignados.',
+                'CLIENTE': 'Bienvenido Cliente, puedes solicitar y seguir tus servicios.'
+            };
+            
+            if (welcomeMessages[userRole]) {
+                console.log(welcomeMessages[userRole]);
+            }
+        });
+        
+        // Marcar enlace activo en sidebar
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
