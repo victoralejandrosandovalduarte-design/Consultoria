@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Formulario de Usuario</title>
+    <!-- Links a Bootstrap -->
+</head>
+<body>
+    <!-- Sidebar -->
+    
+    <div class="main-content">
+        <h2 th:if="${usuario.idUsuario == null}">Nuevo Usuario</h2>
+        <h2 th:unless="${usuario.idUsuario == null}">Editar Usuario</h2>
+        
+        <form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
+            <input type="hidden" th:field="*{idUsuario}" />
+            
+            <div class="mb-3">
+                <label>Email</label>
+                <input th:field="*{email}" class="form-control" />
+            </div>
+            
+            <div class="mb-3">
+                <label>Contraseña</label>
+                <input th:field="*{clave}" type="password" class="form-control" />
+            </div>
+            
+            <div class="mb-3">
+                <label>Rol</label>
+                <select th:field="*{rol}" class="form-select">
+                    <option value="CLIENTE">Cliente</option>
+                    <option value="SOPORTE">Soporte</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label>Estado</label>
+                <input type="checkbox" th:field="*{estado}" />
+            </div>
+            
+            <!-- Campos para cliente si rol=CLIENTE, similar a registro -->
+            
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+    </div>
+</body>
+</html>

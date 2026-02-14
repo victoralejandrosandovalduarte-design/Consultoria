@@ -28,25 +28,29 @@ public class ServicioController {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
         if (usuario == null) return "redirect:/login";
         
-        model.addAttribute("servicios", servicioService.findAll());
+        model.addAttribute("servicios", servicioService.obtenerServiciosPorRol(usuario));
         model.addAttribute("usuario", usuario);
-        return "servicios/lista";
+        return "servicios/lista"; // Se crea vista 
     }
     
     @GetMapping("/nuevo")
     public String nuevoForm(Model model, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
         if (usuario == null) return "redirect:/login";
-        
-        model.addAttribute("servicio", Servicio.builder()
+        Servicio servicio = Servicio.builder()
             .estado("PENDIENTE")
-            .cliente(usuario.getCliente())
-            .build());
+            .build();
+        
+        if ("CLIENTE".equals(usuario.getRol())) {
+            servicio.setCliente(usuario.getCliente());
+        }
+        
+        model.addAttribute("servicio", servicio);
         model.addAttribute("clientes", clienteRepository.findAll());
         model.addAttribute("tecnicos", tecnicoRepository.findAll());
         model.addAttribute("tipos", tipoServicioRepository.findAll());
         
-        return "servicios/formulario";
+        return "servicios/formulario"; // Se crea esta vista
     }
     
     @PostMapping
@@ -71,6 +75,9 @@ public class ServicioController {
                                @RequestParam(required = false) String comentario,
                                HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null || ("CLIENTE".equals(usuario.getRol()))) {
+            return "redirect:/principal";
+        }
         servicioService.cambiarEstado(id, estado, comentario, usuario);
         return "redirect:/servicios/" + id;
     }

@@ -32,9 +32,10 @@ public class ServicioService {
     }
     
     @Transactional
-    public Servicio save(Servicio servicio) {
-        return servicioRepository.save(servicio);
-    }
+public Servicio save(Servicio servicio) {
+    generarNumeroOrden(servicio);
+    return servicioRepository.save(servicio);
+}
     
     @Transactional
     public void delete(Long id) {

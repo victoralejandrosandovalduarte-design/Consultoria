@@ -1,10 +1,11 @@
-// DataInitializer.java
+// DataInitializer.java - Actualizado para encriptar claves iniciales
 package com.example.Consultoria.TI.config;
 
 import com.example.Consultoria.TI.modelo.*;
 import com.example.Consultoria.TI.repository.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ public class DataInitializer {
     private final TipoServicioRepository tipoServicioRepository;
     private final TecnicoRepository tecnicoRepository;
     private final MaterialRepository materialRepository;
+    private final BCryptPasswordEncoder passwordEncoder; // Inyectado
 
     @PostConstruct
     @Transactional
@@ -95,7 +97,7 @@ public class DataInitializer {
     private void crearUsuarioCliente(Cliente cliente) {        
         Usuario usuario = new Usuario();
         usuario.setEmail("cliente@ejemplo.com");
-        usuario.setClave("cliente123");
+        usuario.setClave(passwordEncoder.encode("cliente123")); // Encriptado
         usuario.setRol("CLIENTE");
         usuario.setEstado(true);
         usuario.setCliente(cliente); // Relación ya establecida
@@ -105,7 +107,7 @@ public class DataInitializer {
     private void crearUsuarioAdmin() {
         Usuario admin = new Usuario();
         admin.setEmail("admin@consultoria.com");
-        admin.setClave("admin123");
+        admin.setClave(passwordEncoder.encode("admin123")); // Encriptado
         admin.setRol("ADMIN");
         admin.setEstado(true);
         usuarioRepository.save(admin);
@@ -115,7 +117,7 @@ public class DataInitializer {
         // Crear usuario soporte
         Usuario soporte = new Usuario();
         soporte.setEmail("soporte@consultoria.com");
-        soporte.setClave("soporte123");
+        soporte.setClave(passwordEncoder.encode("soporte123")); // Encriptado
         soporte.setRol("SOPORTE");
         soporte.setEstado(true);
         soporte = usuarioRepository.save(soporte);

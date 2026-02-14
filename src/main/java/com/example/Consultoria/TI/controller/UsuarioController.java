@@ -1,4 +1,3 @@
-// UsuarioController.java (updated)
 package com.example.Consultoria.TI.controller;
 
 import com.example.Consultoria.TI.modelo.Cliente;
@@ -63,7 +62,8 @@ public class UsuarioController {
     }
     
     @PostMapping("/procesarLogin")
-    public String procesarLogin(@RequestParam String email, 
+    public String procesarLogin(
+                               @RequestParam String email, 
                                @RequestParam String clave,
                                HttpSession session, 
                                Model model,
@@ -80,7 +80,57 @@ public class UsuarioController {
             return "usuarios/login";
         }
     }
+    @GetMapping
+    public String listarUsuarios(Model model, HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null || !"ADMIN".equals(usuario.getRol())) {
+            return "redirect:/principal";
+        }
+        model.addAttribute("usuarios", service.findAll());
+        return "usuarios/lista"; // Crear esta vista
+    }
     
+    @GetMapping("/nuevo")
+    public String nuevoUsuarioForm(Model model, HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null || !"ADMIN".equals(usuario.getRol())) {
+            return "redirect:/principal";
+        }
+        model.addAttribute("usuario", new Usuario());
+        return "usuarios/formulario"; // Crear esta vista, similar a registro pero con todos los roles
+    }
+    
+    @PostMapping("/guardar")
+    public String guardarUsuario(@ModelAttribute Usuario usuario, RedirectAttributes redirect, HttpSession session) {
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || !"ADMIN".equals(admin.getRol())) {
+            return "redirect:/principal";
+        }
+        service.guardar(usuario);
+        redirect.addFlashAttribute("exito", "Usuario guardado");
+        return "redirect:/usuarios";
+    }
+    
+    @GetMapping("/{id}/editar")
+    public String editarUsuario(@PathVariable Long id, Model model, HttpSession session) {
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || !"ADMIN".equals(admin.getRol())) {
+            return "redirect:/principal";
+        }
+        model.addAttribute("usuario", service.findById(id).orElseThrow());
+        return "usuarios/formulario";
+    }
+    
+    @PostMapping("/{id}/eliminar")
+    public String eliminarUsuario(@PathVariable Long id, RedirectAttributes redirect, HttpSession session) {
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || !"ADMIN".equals(admin.getRol())) {
+            return "redirect:/principal";
+        }
+        service.eliminar(id);
+        redirect.addFlashAttribute("exito", "Usuario eliminado");
+        return "redirect:/usuarios";
+    }    
     @GetMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirect) {
         session.invalidate();

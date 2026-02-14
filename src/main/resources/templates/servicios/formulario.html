@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Nuevo Servicio</title>
+    <!-- Bootstrap -->
+</head>
+<body>
+    <!-- Sidebar -->
+    
+    <div class="main-content">
+        <h2>Nuevo Servicio</h2>
+        <form th:action="@{/servicios}" th:object="${servicio}" method="post">
+            <div class="mb-3">
+                <label>Cliente</label>
+                <select th:field="*{cliente.idCliente}" class="form-select" th:if="${usuario.rol != 'CLIENTE'}">
+                    <option th:each="cliente : ${clientes}" th:value="${cliente.idCliente}" th:text="${cliente.nombre} + ' ' + ${cliente.apellido}"></option>
+                </select>
+                <input th:if="${usuario.rol == 'CLIENTE'}" th:field="*{cliente.idCliente}" type="hidden" />
+            </div>
+            
+            <div class="mb-3">
+                <label>Tipo de Servicio</label>
+                <select th:field="*{tipoServicio.idTipoServicio}" class="form-select">
+                    <option th:each="tipo : ${tipos}" th:value="${tipo.idTipoServicio}" th:text="${tipo.nombre}"></option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label>Técnico Asignado</label>
+                <select th:field="*{tecnicoAsignado.idTecnico}" class="form-select" th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}">
+                    <option th:each="tecnico : ${tecnicos}" th:value="${tecnico.idTecnico}" th:text="${tecnico.nombre}"></option>
+                </select>
+            </div>
+            
+            <!-- Otros campos: fecha, tiempoEstimado, presupuesto, etc. -->
+            
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+    </div>
+</body>
+</html>

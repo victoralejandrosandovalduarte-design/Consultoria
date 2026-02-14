@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista de Servicios</title>
+    <!-- Bootstrap -->
+</head>
+<body>
+    <!-- Sidebar -->
+    
+    <div class="main-content">
+        <h2>Servicios</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Número Orden</th>
+                    <th>Cliente</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="servicio : ${servicios}">
+                    <td th:text="${servicio.idServicio}"></td>
+                    <td th:text="${servicio.numeroOrden}"></td>
+                    <td th:text="${servicio.cliente.nombre} + ' ' + ${servicio.cliente.apellido}"></td>
+                    <td th:text="${servicio.estado}"></td>
+                    <td>
+                        <a th:href="@{/servicios/${servicio.idServicio}}" class="btn btn-sm btn-info">Ver</a>
+                        <th:if th:if="${usuario.rol == 'SOPORTE' or usuario.rol == 'ADMIN'}">
+                            <!-- Form para cambiar estado y agregar comentario -->
+                            <form th:action="@{/servicios/${servicio.idServicio}/estado}" method="post">
+                                <select name="estado">
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="EN_PROGRESO">En Progreso</option>
+                                    <option value="COMPLETADO">Completado</option>
+                                </select>
+                                <input name="comentario" placeholder="Comentario" />
+                                <button type="submit" class="btn btn-sm btn-primary">Actualizar</button>
+                            </form>
+                        </th:if>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a th:href="@{/servicios/nuevo}" class="btn btn-primary">Nuevo Servicio</a>
+    </div>
+</body>
+</html>
