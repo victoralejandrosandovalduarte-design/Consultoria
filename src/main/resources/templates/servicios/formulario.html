@@ -1,41 +1,74 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Nuevo Servicio</title>
-    <!-- Bootstrap -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Servicio - Consultoría TI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Estilos de principal.html -->
+    <style>
+        /* Copiar estilos de principal.html */
+    </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    
-    <div class="main-content">
-        <h2>Nuevo Servicio</h2>
-        <form th:action="@{/servicios}" th:object="${servicio}" method="post">
-            <div class="mb-3">
-                <label>Cliente</label>
-                <select th:field="*{cliente.idCliente}" class="form-select" th:if="${usuario.rol != 'CLIENTE'}">
-                    <option th:each="cliente : ${clientes}" th:value="${cliente.idCliente}" th:text="${cliente.nombre} + ' ' + ${cliente.apellido}"></option>
-                </select>
-                <input th:if="${usuario.rol == 'CLIENTE'}" th:field="*{cliente.idCliente}" type="hidden" />
+    <div class="d-flex">
+        <!-- Sidebar -->
+        
+        <div class="main-content flex-grow-1">
+            <!-- Header -->
+            
+            <div class="container-fluid">
+                <div class="user-card">
+                    <h4 class="mb-4"><i class="bi bi-tools text-primary me-2"></i> Nuevo Servicio</h4>
+                    
+                    <form th:action="@{/servicios}" th:object="${servicio}" method="post">
+                        <div class="mb-3" th:if="${esAdminOSoporte}">
+                            <label class="form-label">Cliente</label>
+                            <select th:field="*{cliente.idCliente}" class="form-select">
+                                <option value="">Seleccione un cliente</option>
+                                <option th:each="cliente : ${clientes}" th:value="${cliente.idCliente}" th:text="${cliente.nombre} + ' ' + ${cliente.apellido}"></option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Servicio</label>
+                            <select th:field="*{tipoServicio.idTipoServicio}" class="form-select">
+                                <option value="">Seleccione un tipo</option>
+                                <option th:each="tipo : ${tipos}" th:value="${tipo.idTipoServicio}" th:text="${tipo.nombre}"></option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" th:if="${esAdminOSoporte}">
+                            <label class="form-label">Técnico Asignado</label>
+                            <select th:field="*{tecnicoAsignado.idTecnico}" class="form-select">
+                                <option value="">Seleccione un técnico</option>
+                                <option th:each="tecnico : ${tecnicos}" th:value="${tecnico.idTecnico}" th:text="${tecnico.nombre}"></option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tiempo Estimado (horas)</label>
+                            <input type="number" th:field="*{tiempoEstimado}" class="form-control" min="1">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Presupuesto</label>
+                            <input type="number" th:field="*{presupuesto}" class="form-control" step="0.01">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Reclamo/Descripción</label>
+                            <textarea th:field="*{reclamo}" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Guardar Servicio</button>
+                    </form>
+                </div>
             </div>
-            
-            <div class="mb-3">
-                <label>Tipo de Servicio</label>
-                <select th:field="*{tipoServicio.idTipoServicio}" class="form-select">
-                    <option th:each="tipo : ${tipos}" th:value="${tipo.idTipoServicio}" th:text="${tipo.nombre}"></option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label>Técnico Asignado</label>
-                <select th:field="*{tecnicoAsignado.idTecnico}" class="form-select" th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}">
-                    <option th:each="tecnico : ${tecnicos}" th:value="${tecnico.idTecnico}" th:text="${tecnico.nombre}"></option>
-                </select>
-            </div>
-            
-            <!-- Otros campos: fecha, tiempoEstimado, presupuesto, etc. -->
-            
-            <button type="submit" class="btn btn-primary">Guardar</button>
-        </form>
+        </div>
     </div>
+
+    <!-- Scripts -->
 </body>
 </html>

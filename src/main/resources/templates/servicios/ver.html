@@ -1,44 +1,84 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Ver Servicio</title>
-    <!-- Bootstrap y estilos -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Servicio - Consultoría TI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Estilos -->
 </head>
 <body>
-    <!-- Sidebar -->
-    
-    <div class="main-content">
-        <h2>Servicio #<span th:text="${servicio.numeroOrden}"></span></h2>
+    <div class="d-flex">
+        <!-- Sidebar -->
         
-        <!-- Detalles del servicio -->
-        <div class="user-card mb-4">
-            <p><strong>Cliente:</strong> <span th:text="${servicio.cliente.nombre} + ' ' + ${servicio.cliente.apellido}"></span></p>
-            <p><strong>Estado:</strong> <span th:text="${servicio.estado}"></span></p>
-            <!-- Otros detalles -->
-        </div>
-        
-        <!-- Comentarios -->
-        <div class="recent-activity">
-            <h4>Comentarios</h4>
-            <div th:each="comentario : ${servicio.comentarios}">
-                <div class="activity-item">
-                    <div>
-                        <strong th:text="${comentario.usuario.email}"></strong>
-                        <p th:text="${comentario.texto}"></p>
-                        <small th:text="${#temporals.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></small>
+        <div class="main-content flex-grow-1">
+            <!-- Header -->
+            
+            <div class="container-fluid">
+                <div class="user-card mb-4">
+                    <h4 class="mb-4"><i class="bi bi-file-earmark-text text-primary me-2"></i> Detalles del Servicio #<span th:text="${servicio.numeroOrden}"></span></h4>
+                    
+                    <p><strong>Cliente:</strong> <span th:text="${servicio.cliente.nombre} + ' ' + ${servicio.cliente.apellido}"></span></p>
+                    <p><strong>Empresa:</strong> <span th:text="${servicio.cliente.empresa}"></span></p>
+                    <p><strong>Tipo:</strong> <span th:text="${servicio.tipoServicio.nombre}"></span></p>
+                    <p><strong>Estado:</strong> <span th:text="${servicio.estado}"></span></p>
+                    <p><strong>Fecha:</strong> <span th:text="${#temporals.format(servicio.fechaHoraAgendamiento, 'dd/MM/yyyy HH:mm')}"></span></p>
+                    <p><strong>Tiempo Estimado:</strong> <span th:text="${servicio.tiempoEstimado} + ' horas'"></span></p>
+                    <p><strong>Presupuesto:</strong> <span th:text="'$' + ${servicio.presupuesto}"></span></p>
+                    <p><strong>Descripción/Reclamo:</strong> <span th:text="${servicio.reclamo}"></span></p>
+                    
+                    <th:if th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}">
+                        <form th:action="@{/servicios/${servicio.idServicio}/estado}" method="post" class="mt-4">
+                            <div class="mb-3">
+                                <label class="form-label">Cambiar Estado</label>
+                                <select name="estado" class="form-select">
+                                    <option th:selected="${servicio.estado == 'PENDIENTE'}" value="PENDIENTE">Pendiente</option>
+                                    <option th:selected="${servicio.estado == 'EN_PROGRESO'}" value="EN_PROGRESO">En Progreso</option>
+                                    <option th:selected="${servicio.estado == 'COMPLETADO'}" value="COMPLETADO">Completado</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Comentario (opcional)</label>
+                                <textarea name="comentario" class="form-control" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Actualizar</button>
+                        </form>
+                    </th:if>
+                </div>
+                
+                <div class="recent-activity">
+                    <h4 class="mb-4"><i class="bi bi-chat-left-text text-primary me-2"></i> Comentarios</h4>
+                    
+                    <div th:each="comentario : ${servicio.comentarios}" class="activity-item">
+                        <div class="activity-icon bg-primary-light">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <div>
+                            <strong th:text="${comentario.usuario.email}"></strong>
+                            <p class="mb-0" th:text="${comentario.texto}"></p>
+                            <small class="text-muted" th:text="${#temporals.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></small>
+                        </div>
+                    </div>
+                    
+                    <th:if th:if="${usuario.rol == 'SOPORTE' or usuario.rol == 'ADMIN'}">
+                        <form th:action="@{/servicios/${servicio.idServicio}/comentario}" method="post" class="mt-4">
+                            <div class="mb-3">
+                                <label class="form-label">Agregar Comentario</label>
+                                <textarea name="texto" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Agregar</button>
+                        </form>
+                    </th:if>
+                    
+                    <div th:if="${servicio.comentarios.isEmpty()}" class="text-muted">
+                        No hay comentarios aún.
                     </div>
                 </div>
             </div>
-            
-            <!-- Form para agregar comentario (solo soporte/admin) -->
-            <th:if th:if="${usuario.rol == 'SOPORTE' or usuario.rol == 'ADMIN'}">
-                <form th:action="@{/servicios/${servicio.idServicio}/estado}" method="post">
-                    <input type="hidden" name="estado" th:value="${servicio.estado}" />
-                    <textarea name="comentario" placeholder="Agregar comentario"></textarea>
-                    <button type="submit" class="btn btn-primary">Agregar</button>
-                </form>
-            </th:if>
         </div>
     </div>
+
+    <!-- Scripts -->
 </body>
 </html>
