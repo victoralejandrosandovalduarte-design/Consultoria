@@ -251,19 +251,19 @@
                             <div class="quick-actions">
                                 <div class="row">
                                     <div th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE' or session.usuario.rol == 'CLIENTE'}" class="col-md-3 mb-2">
-                                        <a th:href="@{/servicios/nuevo}" class="btn btn-primary w-100">
-                                            <i class="bi bi-plus-circle"></i> Nuevo Servicio
-                                        </a>
-                                    </div>
+                                    <a th:href="@{/servicios/nuevo}" class="btn btn-primary w-100">
+                                     <i class="bi bi-plus-circle"></i> Nuevo Servicio
+                                    </a>
+                                     </div>
                                     
                                     <div th:if="${session.usuario.rol == 'ADMIN'}" class="col-md-3 mb-2">
-                                        <a th:href="@{/usuarios}" class="btn btn-success w-100">
-                                            <i class="bi bi-person-plus"></i> Gestionar Usuarios
-                                        </a>
+                                    <a th:href="@{/usuarios}" class="btn btn-success w-100">
+                                    <i class="bi bi-person-plus"></i> Gestionar Usuarios
+                                    </a>
                                     </div>
                                     
                                     <div th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE'}" class="col-md-3 mb-2">
-                                        <a th:href="@{/servicios/pendientes}" class="btn btn-warning w-100">
+                                        <a th:href="@{/servicios(estado='PENDIENTE')}" class="btn btn-warning w-100">
                                             <i class="bi bi-clock"></i> Ver Pendientes
                                         </a>
                                     </div>

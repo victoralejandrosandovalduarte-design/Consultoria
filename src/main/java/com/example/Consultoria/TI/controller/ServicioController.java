@@ -1,4 +1,3 @@
-// ServicioController.java - Actualizado para manejar creación por roles y visualización en grilla
 package com.example.Consultoria.TI.controller;
 
 import com.example.Consultoria.TI.modelo.*;
@@ -27,7 +26,7 @@ public class ServicioController {
     private final TipoServicioRepository tipoServicioRepository;
     
     @GetMapping
-    public String listar(Model model, HttpSession session) {
+    public String listar(@RequestParam(required = false) String estado,Model model, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
         if (usuario == null) return "redirect:/usuarios/login";
         
@@ -39,6 +38,9 @@ public class ServicioController {
             servicios = servicioService.obtenerServiciosPorTecnico(tecnico.getIdTecnico());
         } else {
             servicios = servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente());
+        }
+        if (estado != null) {
+        servicios = servicios.stream().filter(s -> estado.equals(s.getEstado())).toList();
         }
         
         model.addAttribute("servicios", servicios);
@@ -115,7 +117,21 @@ public class ServicioController {
         
         model.addAttribute("servicio", servicio);
         model.addAttribute("usuario", usuario);
+        model.addAttribute("mostrarPresupuesto", !"SOPORTE".equals(usuario.getRol()));
         return "servicios/ver";
+    }
+    @GetMapping("/{id}/editar")
+    public String editarForm(@PathVariable Long id, Model model, HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null || !"ADMIN".equals(usuario.getRol())) {
+            return "redirect:/servicios";
+        }
+        
+        Servicio servicio = servicioService.findById(id);
+        model.addAttribute("servicio", servicio);
+        model.addAttribute("tecnicos", tecnicoRepository.findAll());
+        model.addAttribute("tipos", tipoServicioRepository.findAll());
+        return "servicios/formulario";
     }
     
     @PostMapping("/{id}/estado")
@@ -134,6 +150,7 @@ public class ServicioController {
         return "redirect:/servicios/" + id;
     }
     
+    
     @PostMapping("/{id}/comentario")
     public String agregarComentario(@PathVariable Long id,
                                     @RequestParam String texto,
@@ -148,4 +165,62 @@ public class ServicioController {
         redirect.addFlashAttribute("exito", "Comentario agregado");
         return "redirect:/servicios/" + id;
     }
-}
+    @PostMapping("/{id}/asignar")
+    public String asignarPresupuesto(@PathVariable Long id,
+                                     @RequestParam Double presupuesto,
+                                     @RequestParam String moneda,
+                                     @RequestParam Long tecnicoId,
+                                     RedirectAttributes redirect,
+                                     HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null || !"ADMIN".equals(usuario.getRol())) {
+            redirect.addFlashAttribute("error", "No autorizado");
+            return "redirect:/servicios";
+            
+        }
+        Tecnico tecnico = tecnicoRepository.findById(tecnicoId)
+            .orElseThrow(() -> new RuntimeException("Técnico no encontrado"));
+        
+        servicioService.asignarPresupuesto(id, presupuesto, moneda, tecnico);
+        redirect.addFlashAttribute("exito", "Presupuesto asignado");
+        return "redirect:/servicios/" + id;
+    }
+    @PostMapping("/{id}/aceptar")
+    public String aceptar(@PathVariable Long id, RedirectAttributes redirect, HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null || !"CLIENTE".equals(usuario.getRol())) {
+            redirect.addFlashAttribute("error", "No autorizado");
+            return "redirect:/servicios";
+        }
+        
+        Servicio servicio = servicioService.findById(id);
+        if (!servicio.getCliente().getIdCliente().equals(usuario.getCliente().getIdCliente())) {
+            redirect.addFlashAttribute("error", "No autorizado");
+            return "redirect:/servicios";
+        }
+        
+        servicioService.aceptarServicio(id);
+        redirect.addFlashAttribute("exito", "Servicio aceptado");
+        return "redirect:/servicios/" + id;
+    }
+    @PostMapping("/{id}/rechazar")
+    public String rechazar(@PathVariable Long id,
+                           @RequestParam String comentario,
+                           RedirectAttributes redirect,
+                           HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null || !"CLIENTE".equals(usuario.getRol())) {
+            redirect.addFlashAttribute("error", "No autorizado");
+            return "redirect:/servicios";
+        }
+        
+        Servicio servicio = servicioService.findById(id);
+        if (!servicio.getCliente().getIdCliente().equals(usuario.getCliente().getIdCliente())) {
+            redirect.addFlashAttribute("error", "No autorizado");
+            return "redirect:/servicios";
+        }
+        servicioService.rechazarServicio(id, comentario, usuario);
+        redirect.addFlashAttribute("exito", "Servicio rechazado");
+        return "redirect:/servicios/" + id;
+    }
+    }

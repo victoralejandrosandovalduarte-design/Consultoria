@@ -70,7 +70,35 @@ public Servicio save(Servicio servicio) {
     public long countServiciosByEstado(String estado) {
         return servicioRepository.countByEstado(estado);
     }
-
+    
+    @Transactional
+    public void asignarPresupuesto(Long id, Double presupuesto, String moneda, Tecnico tecnico) {
+        Servicio servicio = findById(id);
+        servicio.setPresupuesto(presupuesto);
+        servicio.setMoneda(moneda);
+        servicio.setTecnicoAsignado(tecnico);
+        servicio.setEstado("ESPERANDO_APROBACION");
+        save(servicio);
+    }
+    
+    @Transactional
+    public void aceptarServicio(Long id) {
+        Servicio servicio = findById(id);
+        if ("ESPERANDO_APROBACION".equals(servicio.getEstado())) {
+            servicio.setEstado("EN_PROGRESO");
+            save(servicio);
+        }
+    }
+    
+    @Transactional
+    public void rechazarServicio(Long id, String comentario, Usuario usuario) {
+        Servicio servicio = findById(id);
+        if ("ESPERANDO_APROBACION".equals(servicio.getEstado())) {
+            servicio.setEstado("CANCELADO");
+            agregarComentario(id, comentario, usuario);
+            save(servicio);
+        }
+    }
     @Transactional
     public void agregarDetalle(Long servicioId, Long materialId, Integer cantidad) {
         Servicio servicio = findById(servicioId);

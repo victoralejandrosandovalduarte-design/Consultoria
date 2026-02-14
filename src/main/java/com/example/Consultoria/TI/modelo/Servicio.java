@@ -1,4 +1,3 @@
-// Servicio.java
 package com.example.Consultoria.TI.modelo;
 
 import jakarta.persistence.*;
@@ -18,7 +17,7 @@ public class Servicio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idServicio;
-    
+    private String moneda;
     private String numeroOrden;
     private LocalDateTime fechaHoraAgendamiento;
     private Integer tiempoEstimado;
