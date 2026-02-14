@@ -1,3 +1,4 @@
+// ServicioController.java
 package com.example.Consultoria.TI.controller;
 
 import com.example.Consultoria.TI.modelo.*;
@@ -74,4 +75,3 @@ public class ServicioController {
         return "redirect:/servicios/" + id;
     }
 }
-

@@ -1,3 +1,4 @@
+// ServicioService.java (updated with completions)
 package com.example.Consultoria.TI.service;
 
 import com.example.Consultoria.TI.modelo.*;
@@ -68,50 +69,69 @@ public class ServicioService {
     public long countServiciosByEstado(String estado) {
         return servicioRepository.countByEstado(estado);
     }
-    
-    public long countServiciosPorCliente(Long idCliente) {
-        return servicioRepository.countByClienteIdCliente(idCliente);
-    }
-    
-    public long countServiciosPorTecnico(Long idTecnico) {
-        return servicioRepository.countByTecnicoAsignadoIdTecnico(idTecnico);
-    }
-    
-    // Método para cambiar estado
+
     @Transactional
-    public Servicio cambiarEstado(Long id, String nuevoEstado, String comentarioTexto, Usuario usuario) {
+    public void agregarDetalle(Long servicioId, Long materialId, Integer cantidad) {
+        Servicio servicio = findById(servicioId);
+        Material material = materialRepository.findById(materialId)
+            .orElseThrow(() -> new RuntimeException("Material no encontrado"));
+        
+        DetalleServicio detalle = new DetalleServicio();
+        detalle.setMaterial(material);
+        detalle.setCantidad(cantidad);
+        detalle.setSubtotal(cantidad * material.getPrecio());
+        
+        servicio.addDetalle(detalle);
+        servicio.setPresupuesto(servicio.getPresupuesto() + detalle.getSubtotal()); // Actualizar presupuesto
+        save(servicio);
+    }
+    
+    @Transactional
+    public void agregarComentario(Long servicioId, String texto, Usuario usuario) {
+        Servicio servicio = findById(servicioId);
+        
+        Comentario comentario = Comentario.builder()
+            .texto(texto)
+            .usuario(usuario)
+            .build();
+        
+        servicio.addComentario(comentario);
+        save(servicio);
+    }
+    
+    @Transactional
+    public void cambiarEstado(Long id, String nuevoEstado, String comentario, Usuario usuario) {
         Servicio servicio = findById(id);
         servicio.setEstado(nuevoEstado);
         
-        if (comentarioTexto != null && !comentarioTexto.trim().isEmpty()) {
-            Comentario comentario = Comentario.builder()
-                .texto("Estado cambiado a " + nuevoEstado + ": " + comentarioTexto)
-                .fecha(LocalDateTime.now())
-                .servicio(servicio)
-                .usuario(usuario)
-                .build();
-            
-            comentarioRepository.save(comentario);
-            servicio.addComentario(comentario);
+        if (comentario != null && !comentario.isEmpty()) {
+            agregarComentario(id, comentario, usuario);
         }
         
-        return servicioRepository.save(servicio);
+        save(servicio);
     }
     
-    // Métodos para dropdowns
-    public List<Cliente> obtenerTodosClientes() {
-        return clienteRepository.findAll();
+    public List<Servicio> obtenerServiciosPorRol(Usuario usuario) {
+        String rol = usuario.getRol();
+        if ("ADMIN".equals(rol)) {
+            return findAll();
+        } else if ("SOPORTE".equals(rol)) {
+            Tecnico tecnico = tecnicoRepository.findByUsuarioIdUsuario(usuario.getIdUsuario())
+                .orElseThrow(() -> new RuntimeException("Técnico no encontrado"));
+            return obtenerServiciosPorTecnico(tecnico.getIdTecnico());
+        } else if ("CLIENTE".equals(rol)) {
+            return obtenerServiciosPorCliente(usuario.getCliente().getIdCliente());
+        }
+        return List.of();
     }
     
-    public List<Tecnico> obtenerTodosTecnicos() {
-        return tecnicoRepository.findAll();
-    }
-    
-    public List<TipoServicio> obtenerTodosTiposServicio() {
-        return tipoServicioRepository.findAll();
-    }
-    
-    public List<Material> obtenerTodosMateriales() {
-        return materialRepository.findAll();
+    // Método para generar número de orden automático
+    @Transactional
+    public Servicio generarNumeroOrden(Servicio servicio) {
+        if (servicio.getNumeroOrden() == null) {
+            long count = countTotalServicios() + 1;
+            servicio.setNumeroOrden(String.format("ORD-%05d", count));
+        }
+        return servicio;
     }
 }

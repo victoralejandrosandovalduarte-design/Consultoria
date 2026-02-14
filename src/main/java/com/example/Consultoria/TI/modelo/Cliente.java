@@ -1,3 +1,4 @@
+// Cliente.java
 package com.example.Consultoria.TI.modelo;
 
 import jakarta.persistence.*;

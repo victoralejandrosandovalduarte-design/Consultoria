@@ -1,7 +1,9 @@
-// UsuarioService.java - MEJORADO
+// UsuarioService.java (updated)
 package com.example.Consultoria.TI.service;
 
+import com.example.Consultoria.TI.modelo.Cliente;
 import com.example.Consultoria.TI.modelo.Usuario;
+import com.example.Consultoria.TI.repository.ClienteRepository;
 import com.example.Consultoria.TI.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,59 +17,56 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UsuarioService {
     
-    private final UsuarioRepository repository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final UsuarioRepository usuarioRepository;
+    private final ClienteRepository clienteRepository;
+    private final BCryptPasswordEncoder passwordEncoder; // Inyectar el bean de BCrypt
+
+    public List<Usuario> findAll() {
+        return usuarioRepository.findAll();
+    }
+    
+    public Optional<Usuario> findById(Long id) {
+        return usuarioRepository.findById(id);
+    }
     
     @Transactional
-    public void guardar(Usuario usuario) {
+    public Usuario guardar(Usuario usuario) {
         // Validar email único
-        if (repository.findByEmail(usuario.getEmail()).isPresent()) {
-            throw new RuntimeException("El email ya está registrado");
+        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
+            throw new RuntimeException("El email ya está en uso");
         }
         
-        // Encriptar contraseña
+        // Encriptar clave
         usuario.setClave(passwordEncoder.encode(usuario.getClave()));
         
-        // Valores por defecto
-        if (usuario.getRol() == null) {
-            usuario.setRol("CLIENTE");
-        }
-        if (usuario.getEstado() == null) {
-            usuario.setEstado(true);
+        // Si es CLIENTE y tiene cliente asociado, guardarlo
+        if ("CLIENTE".equals(usuario.getRol()) && usuario.getCliente() != null) {
+            clienteRepository.save(usuario.getCliente());
         }
         
-        repository.save(usuario);
+        usuario.setEstado(true); // Por defecto activo
+        return usuarioRepository.save(usuario);
+    }
+    
+    @Transactional
+    public void eliminar(Long id) {
+        usuarioRepository.deleteById(id);
     }
     
     public Optional<Usuario> autenticar(String email, String clave) {
-        Optional<Usuario> usuarioOpt = repository.findByEmail(email);
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
-            if (passwordEncoder.matches(clave, usuario.getClave()) 
-                && Boolean.TRUE.equals(usuario.getEstado())) {
-                return Optional.of(usuario);
-            }
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+        if (usuarioOpt.isPresent() && passwordEncoder.matches(clave, usuarioOpt.get().getClave())) {
+            return usuarioOpt;
         }
         return Optional.empty();
     }
     
-    public List<Usuario> obtenerTodos() {
-        return repository.findAll();
-    }
-    
+    // Método para cambiar clave (futuro uso)
     @Transactional
-    public void cambiarEstado(Long id, Boolean estado) {
-        repository.findById(id).ifPresent(usuario -> {
-            usuario.setEstado(estado);
-            repository.save(usuario);
-        });
-    }
-    
-    @Transactional
-    public void cambiarRol(Long id, String rol) {
-        repository.findById(id).ifPresent(usuario -> {
-            usuario.setRol(rol);
-            repository.save(usuario);
-        });
+    public void cambiarClave(Long id, String nuevaClave) {
+        Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setClave(passwordEncoder.encode(nuevaClave));
+        usuarioRepository.save(usuario);
     }
 }

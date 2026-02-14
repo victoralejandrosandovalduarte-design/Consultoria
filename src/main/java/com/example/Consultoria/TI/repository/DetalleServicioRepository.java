@@ -1,3 +1,4 @@
+// DetalleServicioRepository.java
 package com.example.Consultoria.TI.repository;
 
 import com.example.Consultoria.TI.modelo.DetalleServicio;

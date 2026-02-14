@@ -1,3 +1,4 @@
+<!-- registro.html (updated) -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -51,7 +52,7 @@
                     </div>
 
                     <!-- Formulario de registro -->
-                    <form th:action="@{/usuarios/registro}" th:object="${usuario}" method="post">
+                    <form th:action="@{/usuarios/procesarRegistro}" th:object="${usuario}" method="post">
                         <!-- Información del usuario -->
                         <div class="mb-3">
                             <label for="email" class="form-label">Email *</label>
@@ -88,46 +89,68 @@
                             </div>
                         </div>
                         
-                        <!-- Información del cliente -->
-                        <div class="mt-4 pt-3 border-top">
+                        <!-- Información del cliente (solo si rol=CLIENTE) -->
+                        <div th:if="*{rol} == 'CLIENTE'" class="mt-4 pt-3 border-top">
                             <h5 class="mb-3">Información del Cliente</h5>
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="nombre" class="form-label">Nombre</label>
+                                    <label for="nombre" class="form-label">Nombre *</label>
                                     <input type="text" 
                                            class="form-control" 
                                            id="nombre" 
                                            name="nombre"
-                                           placeholder="Ej: Juan">
+                                           placeholder="Ej: Juan"
+                                           required>
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
-                                    <label for="apellido" class="form-label">Apellido</label>
+                                    <label for="apellido" class="form-label">Apellido *</label>
                                     <input type="text" 
                                            class="form-control" 
                                            id="apellido" 
                                            name="apellido"
-                                           placeholder="Ej: Pérez">
+                                           placeholder="Ej: Pérez"
+                                           required>
                                 </div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="empresa" class="form-label">Empresa</label>
+                                <label for="empresa" class="form-label">Empresa *</label>
                                 <input type="text" 
                                        class="form-control" 
                                        id="empresa" 
                                        name="empresa"
-                                       placeholder="Nombre de tu empresa">
+                                       placeholder="Nombre de tu empresa"
+                                       required>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="ciRuc" class="form-label">CI/RUC</label>
+                                <label for="ciRuc" class="form-label">CI/RUC *</label>
                                 <input type="text" 
                                        class="form-control" 
                                        id="ciRuc" 
                                        name="ciRuc"
-                                       placeholder="Número de identificación">
+                                       placeholder="Número de identificación"
+                                       required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="ciudad" class="form-label">Ciudad</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="ciudad" 
+                                       name="ciudad"
+                                       placeholder="Ej: Quito">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="lugarMantenimiento" class="form-label">Lugar de Mantenimiento</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="lugarMantenimiento" 
+                                       name="lugarMantenimiento"
+                                       placeholder="Ej: Oficina Central">
                             </div>
                         </div>
                         

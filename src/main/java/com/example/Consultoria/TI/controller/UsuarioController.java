@@ -1,5 +1,7 @@
+// UsuarioController.java (updated)
 package com.example.Consultoria.TI.controller;
 
+import com.example.Consultoria.TI.modelo.Cliente;
 import com.example.Consultoria.TI.modelo.Usuario;
 import com.example.Consultoria.TI.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
@@ -21,13 +23,31 @@ public class UsuarioController {
     @GetMapping("/registro")
     public String registroForm(Model model) {
         model.addAttribute("usuario", new Usuario());
+        model.addAttribute("cliente", new Cliente()); // Agregamos cliente para el form
         return "usuarios/registro";
     }
     
     @PostMapping("/procesarRegistro")
     public String procesarRegistro(@ModelAttribute Usuario usuario,
+                                  @RequestParam(required = false) String nombre,
+                                  @RequestParam(required = false) String apellido,
+                                  @RequestParam(required = false) String empresa,
+                                  @RequestParam(required = false) String ciRuc,
+                                  @RequestParam(required = false) String ciudad,
+                                  @RequestParam(required = false) String lugarMantenimiento,
                                   RedirectAttributes redirect) {
         try {
+            if ("CLIENTE".equals(usuario.getRol())) {
+                Cliente cliente = Cliente.builder()
+                    .nombre(nombre)
+                    .apellido(apellido)
+                    .empresa(empresa)
+                    .ciRuc(ciRuc)
+                    .ciudad(ciudad)
+                    .lugarMantenimiento(lugarMantenimiento)
+                    .build();
+                usuario.setCliente(cliente);
+            }
             service.guardar(usuario);
             redirect.addFlashAttribute("exito", "Usuario registrado exitosamente");
             return "redirect:/usuarios/login";

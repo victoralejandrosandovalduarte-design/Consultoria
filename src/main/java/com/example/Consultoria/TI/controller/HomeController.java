@@ -1,3 +1,4 @@
+// HomeController.java
 package com.example.Consultoria.TI.controller;
 
 import org.springframework.stereotype.Controller;
