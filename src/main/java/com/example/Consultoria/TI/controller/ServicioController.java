@@ -80,8 +80,8 @@ public class ServicioController {
         
         // Validaciones por rol
         if ("CLIENTE".equals(usuario.getRol()) && !servicio.getCliente().getIdCliente().equals(usuario.getCliente().getIdCliente())) {
-            redirect.addFlashAttribute("error", "No autorizado");
-            return "redirect:/servicios";
+            redirect.addFlashAttribute("exito", "Ticket cargado con éxito. Vuelva más tarde.");
+            return "redirect:/principal";
         }
         
         servicioService.save(servicio);

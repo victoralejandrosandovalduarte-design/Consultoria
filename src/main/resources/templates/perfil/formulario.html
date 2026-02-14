@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head}">
-    <title>Clientes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<head>
+    <title>Editar Perfil</title>
+    <!-- Estilos -->
     <style>
         :root {
             --primary: #4361ee;
@@ -141,6 +140,7 @@
 </head>
 <body>
     <div class="d-flex">
+        <!-- Sidebar -->
         <nav class="sidebar">
             <div class="text-center mb-4">
                 <h3 class="h4 mb-0">TI Consult</h3>
@@ -187,122 +187,27 @@
                     </div>
                 </div>
             </header>
-            
             <div class="container-fluid">
-                <h2 class="mb-4">Clientes (Total: <span th:text="${clientes.size()}"></span>)</h2>
-                
-                <div class="row">
-                    <div th:each="cliente : ${clientes}" class="col-md-4 mb-4">
-                        <div class="service-card"> <!-- Reusar estilo -->
-                            <h5 th:text="${cliente.nombre} + ' ' + ${cliente.apellido}"></h5>
-                            <p><strong>Empresa:</strong> <span th:text="${cliente.empresa}"></span></p>
-                            <p><strong>CI/RUC:</strong> <span th:text="${cliente.ciRuc}"></span></p>
-                            <p><strong>Ciudad:</strong> <span th:text="${cliente.ciudad}"></span></p>
-                            <p><strong>Lugar Mantenimiento:</strong> <span th:text="${cliente.lugarMantenimiento}"></span></p>
-                            <a th:href="@{/clientes/${cliente.idCliente}}" class="btn btn-sm btn-outline-primary">Ver Detalles</a>
+                <div class="user-card">
+                    <h4 class="mb-4"><i class="bi bi-pencil-square text-primary me-2"></i> Editar Perfil</h4>
+                    
+                    <form th:action="@{/perfil/actualizar}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input name="email" th:value="${usuario.email}" class="form-control" required>
                         </div>
-                    </div>
-                </div>
-                
-                <div th:if="${clientes.isEmpty()}" class="alert alert-info">
-                    No hay clientes disponibles.
-                </div>
-            </div>
-        </div>
-    </div>
-    <nav th:replace="~{fragments :: menu}"></nav>
-    
-    <div class="container mt-4">
-        <div th:replace="~{fragments :: mensajes}"></div>
-        
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            
-            <h2 class="mb-4">Clientes (Total: <span th:text="${clientes.size()}"></span>)</h2>
-            <a th:href="@{/clientes/nuevo}" class="btn btn-primary">
-                <i class="bi bi-person-plus"></i> Nuevo Cliente
-            </a>
-        </div>
-        
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Empresa</th>
-                                <th>CI/RUC</th>
-                                <th>Ciudad</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="cliente : ${clientes}">
-                                <td th:text="${cliente.idCliente}"></td>
-                                <td th:text="${cliente.nombre + ' ' + cliente.apellido}"></td>
-                                <td th:text="${cliente.empresa}"></td>
-                                <td th:text="${cliente.ciRuc}"></td>
-                                <td th:text="${cliente.ciudad}"></td>
-                                <td>
-                                    <a th:href="@{/clientes/{id}(id=${cliente.idCliente})}" 
-                                       class="btn btn-sm btn-info">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a th:href="@{/clientes/{id}/editar(id=${cliente.idCliente})}" 
-                                       class="btn btn-sm btn-warning">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <button type="button" 
-                                            class="btn btn-sm btn-danger"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#modalEliminar"
-                                            th:data-id="${cliente.idCliente}"
-                                            th:data-nombre="${cliente.nombre}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal de confirmación -->
-    <div class="modal fade" id="modalEliminar" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmar Eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro de eliminar al cliente <span id="nombreCliente"></span>?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="formEliminar" method="post">
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nueva Contraseña (opcional)</label>
+                            <input name="nuevaClave" type="password" class="form-control">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        <a th:href="@{/perfil}" class="btn btn-outline-secondary">Cancelar</a>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('modalEliminar');
-            modal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const id = button.getAttribute('data-id');
-                const nombre = button.getAttribute('data-nombre');
-                
-                document.getElementById('nombreCliente').textContent = nombre;
-                document.getElementById('formEliminar').action = '/clientes/' + id + '/eliminar';
-            });
-        });
-    </script>
 </body>
 </html>
