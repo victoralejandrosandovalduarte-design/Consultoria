@@ -1,10 +1,14 @@
 package com.example.Consultoria.TI.controller;
 
+import com.example.Consultoria.TI.modelo.Servicio;
 import com.example.Consultoria.TI.modelo.Tecnico;
 import com.example.Consultoria.TI.modelo.Usuario;
+import com.example.Consultoria.TI.repository.TecnicoRepository;
 import com.example.Consultoria.TI.service.ClienteService;
 import com.example.Consultoria.TI.service.ServicioService;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,44 +19,50 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class PrincipalController {
     private final ServicioService servicioService;
     private final ClienteService clienteService;
-    @GetMapping("/principal")
+    private final TecnicoRepository tecnicoRepository;
+    
+    
+   @GetMapping("/principal")
     public String principal(HttpSession session, Model model) {
-        System.out.println("🔍 Accediendo a /principal");
-        
-        // Verificar sesión
         Object usuarioObj = session.getAttribute("usuario");
-        System.out.println("   Usuario en sesión: " + usuarioObj);
-        
         if (usuarioObj == null) {
-            System.out.println("   ❌ No hay usuario, redirigiendo a login");
             return "redirect:/usuarios/login";
         }
         
         Usuario usuario = (Usuario) usuarioObj;
-        System.out.println("   ✅ Usuario encontrado: " + usuario.getEmail() + " (" + usuario.getRol() + ")");
-        
-        // Agregar al modelo
         model.addAttribute("usuario", usuario);
         
-       // Cargar estadísticas basadas en rol
-        if ("ADMIN".equals(usuario.getRol())) {
-            model.addAttribute("totalServicios", servicioService.countTotalServicios());
-            model.addAttribute("serviciosPendientes", servicioService.countServiciosByEstado("PENDIENTE"));
-            model.addAttribute("serviciosCompletados", servicioService.countServiciosByEstado("COMPLETADO"));
-            model.addAttribute("totalClientes", clienteService.contarClientes());
-        } else if ("SOPORTE".equals(usuario.getRol())) {
-            // Estadísticas para soporte: servicios asignados
-            Tecnico tecnico = (Tecnico) session.getAttribute("tecnico"); // Asumir que se guarda en sesión, o buscar
-            model.addAttribute("totalServicios", servicioService.obtenerServiciosPorTecnico(tecnico.getIdTecnico()).size());
-            model.addAttribute("serviciosPendientes", servicioService.obtenerServiciosPorTecnico(tecnico.getIdTecnico()).stream().filter(s -> "PENDIENTE".equals(s.getEstado())).count());
-            model.addAttribute("serviciosCompletados", servicioService.obtenerServiciosPorTecnico(tecnico.getIdTecnico()).stream().filter(s -> "COMPLETADO".equals(s.getEstado())).count());
-        } else if ("CLIENTE".equals(usuario.getRol())) {
-            // Estadísticas para cliente: sus servicios
-            model.addAttribute("totalServicios", servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente()).size());
-            model.addAttribute("serviciosPendientes", servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente()).stream().filter(s -> "PENDIENTE".equals(s.getEstado())).count());
-            model.addAttribute("serviciosCompletados", servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente()).stream().filter(s -> "COMPLETADO".equals(s.getEstado())).count());
-        }
+       // Cargar estadísticas
+        long totalServicios = 0;
+        long serviciosPendientes = 0;
+        long serviciosCompletados = 0;
+        long totalClientes = 0;
         
+        if ("ADMIN".equals(usuario.getRol())) {
+            totalServicios = servicioService.countTotalServicios();
+            serviciosPendientes = servicioService.countServiciosByEstado("PENDIENTE");
+            serviciosCompletados = servicioService.countServiciosByEstado("COMPLETADO");
+            totalClientes = clienteService.contarClientes();
+        } else if ("SOPORTE".equals(usuario.getRol())) {
+            Optional<Tecnico> tecnicoOpt = tecnicoRepository.findByUsuarioIdUsuario(usuario.getIdUsuario());
+            if (tecnicoOpt.isPresent()) {
+                Tecnico tecnico = tecnicoOpt.get();
+                session.setAttribute("tecnico", tecnico); // Guardar en sesión
+                List<Servicio> servicios = servicioService.obtenerServiciosPorTecnico(tecnico.getIdTecnico());
+                totalServicios = servicios.size();
+                serviciosPendientes = servicios.stream().filter(s -> "PENDIENTE".equals(s.getEstado())).count();
+                serviciosCompletados = servicios.stream().filter(s -> "COMPLETADO".equals(s.getEstado())).count();
+            }
+        } else if ("CLIENTE".equals(usuario.getRol())) {
+            List<Servicio> servicios = servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente());
+            totalServicios = servicios.size();
+            serviciosPendientes = servicios.stream().filter(s -> "PENDIENTE".equals(s.getEstado())).count();
+            serviciosCompletados = servicios.stream().filter(s -> "COMPLETADO".equals(s.getEstado())).count();
+        }
+        model.addAttribute("totalServicios", totalServicios);
+        model.addAttribute("serviciosPendientes", serviciosPendientes);
+        model.addAttribute("serviciosCompletados", serviciosCompletados);
+        model.addAttribute("totalClientes", totalClientes);
         return "principal";
     }
 }

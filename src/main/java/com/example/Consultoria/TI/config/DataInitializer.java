@@ -1,4 +1,3 @@
-// DataInitializer.java - Actualizado para encriptar claves iniciales
 package com.example.Consultoria.TI.config;
 
 import com.example.Consultoria.TI.modelo.*;
@@ -17,7 +16,7 @@ public class DataInitializer {
     private final TipoServicioRepository tipoServicioRepository;
     private final TecnicoRepository tecnicoRepository;
     private final MaterialRepository materialRepository;
-    private final BCryptPasswordEncoder passwordEncoder; // Inyectado
+    private final BCryptPasswordEncoder passwordEncoder; 
 
     @PostConstruct
     @Transactional

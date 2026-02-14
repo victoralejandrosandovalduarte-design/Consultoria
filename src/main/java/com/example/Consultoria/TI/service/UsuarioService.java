@@ -1,4 +1,3 @@
-// UsuarioService.java (updated)
 package com.example.Consultoria.TI.service;
 
 import com.example.Consultoria.TI.modelo.Cliente;
@@ -29,6 +28,7 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
     
+    
     @Transactional
     public Usuario guardar(Usuario usuario) {
         // Validar email único
@@ -55,8 +55,12 @@ public class UsuarioService {
     
     public Optional<Usuario> autenticar(String email, String clave) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
-        if (usuarioOpt.isPresent() && passwordEncoder.matches(clave, usuarioOpt.get().getClave())) {
-            return usuarioOpt;
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            System.out.println("Clave almacenada: " + usuario.getClave()); // Log para depuración
+            if (passwordEncoder.matches(clave, usuario.getClave())) {
+                return usuarioOpt;
+            }
         }
         return Optional.empty();
     }
