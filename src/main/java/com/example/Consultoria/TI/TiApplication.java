@@ -1,4 +1,3 @@
-// TiApplication.java
 package com.example.Consultoria.TI;
 
 import org.springframework.boot.SpringApplication;

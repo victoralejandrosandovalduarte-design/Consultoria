@@ -26,27 +26,32 @@ public class ServicioController {
     private final TipoServicioRepository tipoServicioRepository;
     
     @GetMapping
-    public String listar(@RequestParam(required = false) String estado,Model model, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null) return "redirect:/usuarios/login";
-        
-        List<Servicio> servicios;
-        if ("ADMIN".equals(usuario.getRol())) {
-            servicios = servicioService.findAll();
-        } else if ("SOPORTE".equals(usuario.getRol())) {
-            Tecnico tecnico = (Tecnico) session.getAttribute("tecnico");
-            servicios = servicioService.obtenerServiciosPorTecnico(tecnico.getIdTecnico());
-        } else {
-            servicios = servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente());
+public String listar(@RequestParam(required = false) String estado, Model model, HttpSession session) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null) return "redirect:/usuarios/login";
+    
+    List<Servicio> servicios;
+    if ("ADMIN".equals(usuario.getRol())) {
+        servicios = servicioService.findAll();
+    } else if ("SOPORTE".equals(usuario.getRol())) {
+        Tecnico tecnico = (Tecnico) session.getAttribute("tecnico");
+        if (tecnico == null) {
+            model.addAttribute("error", "Técnico no asignado. Contacta al admin.");
+            return "servicios/lista";
         }
-        if (estado != null) {
-        servicios = servicios.stream().filter(s -> estado.equals(s.getEstado())).toList();
-        }
-        
-        model.addAttribute("servicios", servicios);
-        model.addAttribute("usuario", usuario);
-        return "servicios/lista";
+        servicios = servicioService.obtenerServiciosPorTecnico(tecnico.getIdTecnico());
+        System.out.println("DEBUG Soporte: Servicios cargados: " + servicios.size()); // Log para verificar
+    } else {
+        servicios = servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente());
     }
+    if (estado != null) {
+        servicios = servicios.stream().filter(s -> estado.equals(s.getEstado())).toList();
+    }
+    
+    model.addAttribute("servicios", servicios);
+    model.addAttribute("usuario", usuario);
+    return "servicios/lista";
+}
     
     @GetMapping("/nuevo")
     public String nuevoForm(Model model, HttpSession session) {
@@ -84,10 +89,10 @@ public class ServicioController {
             return "redirect:/principal";
         }
         
-        servicioService.save(servicio);
+        servicioService.save(servicio); // Corrige: llama al service con generarNumeroOrden
         redirect.addFlashAttribute("exito", "Servicio guardado exitosamente");
-        return "redirect:/servicios";
-    }
+        return "redirect:/servicios?estado=" + servicio.getEstado(); // Corrige redirect
+        }
     
     @GetMapping("/{id}")
     public String ver(@PathVariable Long id, Model model, HttpSession session) {
@@ -146,9 +151,9 @@ public class ServicioController {
             return "redirect:/servicios";
         }
         servicioService.cambiarEstado(id, estado, comentario, usuario);
-        redirect.addFlashAttribute("exito", "Estado actualizado");
-        return "redirect:/servicios/" + id;
-    }
+    redirect.addFlashAttribute("exito", "Estado actualizado");
+    return "redirect:/servicios/" + id; // Evita Whitelabel
+}
     
     
     @PostMapping("/{id}/comentario")

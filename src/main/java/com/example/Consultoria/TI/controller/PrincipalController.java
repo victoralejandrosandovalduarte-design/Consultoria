@@ -54,11 +54,13 @@ public class PrincipalController {
                 serviciosCompletados = servicios.stream().filter(s -> "COMPLETADO".equals(s.getEstado())).count();
             }
         } else if ("CLIENTE".equals(usuario.getRol())) {
-            List<Servicio> servicios = servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente());
-            totalServicios = servicios.size();
-            serviciosPendientes = servicios.stream().filter(s -> "PENDIENTE".equals(s.getEstado())).count();
-            serviciosCompletados = servicios.stream().filter(s -> "COMPLETADO".equals(s.getEstado())).count();
-        }
+    List<Servicio> servicios = servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente());
+    totalServicios = servicios != null ? servicios.size() : 0;
+    serviciosPendientes = servicios != null ? servicios.stream().filter(s -> "PENDIENTE".equals(s.getEstado())).count() : 0;
+    serviciosCompletados = servicios != null ? servicios.stream().filter(s -> "COMPLETADO".equals(s.getEstado())).count() : 0;
+    totalClientes = 1; // Solo el propio
+}
+model.addAttribute("totalServicios", totalServicios);
         model.addAttribute("totalServicios", totalServicios);
         model.addAttribute("serviciosPendientes", serviciosPendientes);
         model.addAttribute("serviciosCompletados", serviciosCompletados);
