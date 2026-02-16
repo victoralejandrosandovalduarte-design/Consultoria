@@ -1,5 +1,5 @@
 package com.example.Consultoria.TI;
-
+// versión estable punto de partida 16/02/2026
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
