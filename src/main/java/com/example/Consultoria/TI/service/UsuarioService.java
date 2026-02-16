@@ -30,23 +30,24 @@ public class UsuarioService {
     
     
     @Transactional
-    public Usuario guardar(Usuario usuario) {
-        // Validar email único
-        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
-            throw new RuntimeException("El email ya está en uso");
-        }
-        
-        // Encriptar clave
-        usuario.setClave(passwordEncoder.encode(usuario.getClave()));
-        
-        // Si es CLIENTE y tiene cliente asociado, guardarlo
-        if ("CLIENTE".equals(usuario.getRol()) && usuario.getCliente() != null) {
-            clienteRepository.save(usuario.getCliente());
-        }
-        
-        usuario.setEstado(true); // Por defecto activo
-        return usuarioRepository.save(usuario);
+public Usuario guardar(Usuario usuario) {
+    // Validar email único
+    if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
+        throw new RuntimeException("El email ya está en uso");
     }
+
+    // Encriptar clave
+    usuario.setClave(passwordEncoder.encode(usuario.getClave()));
+
+    // Si es CLIENTE y tiene cliente asociado, guardarlo primero
+    if ("CLIENTE".equals(usuario.getRol()) && usuario.getCliente() != null) {
+        Cliente cliente = usuario.getCliente();
+        clienteRepository.save(cliente); // esto asigna ID
+    }
+
+    usuario.setEstado(true);
+    return usuarioRepository.save(usuario);
+}
     
     @Transactional
     public void eliminar(Long id) {

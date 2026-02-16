@@ -19,12 +19,10 @@
             --light: #f8f9fa;
             --dark: #073b4c;
         }
-        
         body {
             background: var(--light);
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
         }
-        
         .sidebar {
             background: var(--primary-dark);
             color: white;
@@ -33,7 +31,6 @@
             position: fixed;
             width: 250px;
         }
-        
         .sidebar .nav-link {
             color: rgba(255,255,255,0.8);
             margin: 0.5rem 0;
@@ -41,35 +38,29 @@
             border-radius: 0.5rem;
             transition: all 0.2s;
         }
-        
         .sidebar .nav-link:hover {
             background: rgba(255,255,255,0.1);
             color: white;
         }
-        
         .sidebar .nav-link.active {
             background: rgba(255,255,255,0.2);
             color: white;
         }
-        
         .main-content {
             margin-left: 250px;
             padding: 2rem;
         }
-        
         .header {
             background: white;
             border-bottom: 1px solid var(--secondary);
             padding: 1rem 2rem;
         }
-        
         .user-card {
             background: white;
             border-radius: 1rem;
             padding: 1.5rem;
             box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
         }
-        
         .stats-card {
             background: white;
             border-radius: 1rem;
@@ -77,7 +68,6 @@
             box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
             text-align: center;
         }
-        
         .stats-icon {
             width: 3rem;
             height: 3rem;
@@ -88,31 +78,26 @@
             font-size: 1.5rem;
             margin: 0 auto 1rem;
         }
-        
         .bg-primary-light { background: var(--primary-light); color: var(--primary-dark); }
         .bg-success-light { background: rgba(6,214,160,0.1); color: var(--success); }
         .bg-warning-light { background: rgba(255,209,102,0.1); color: var(--warning); }
         .bg-info-light { background: rgba(17,138,178,0.1); color: var(--info); }
         .bg-danger-light { background: rgba(239,71,111,0.1); color: var(--danger); }
-        
         .recent-activity {
             background: white;
             border-radius: 1rem;
             padding: 1.5rem;
             box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
         }
-        
         .activity-item {
             display: flex;
             align-items: center;
             padding: 1rem 0;
             border-bottom: 1px solid var(--light);
         }
-        
         .activity-item:last-child {
             border-bottom: none;
         }
-        
         .activity-icon {
             width: 2.5rem;
             height: 2.5rem;
@@ -123,12 +108,10 @@
             font-size: 1.25rem;
             margin-right: 1rem;
         }
-        
         .quick-actions .btn {
             padding: 0.75rem;
             font-weight: 500;
         }
-        
         @media (max-width: 768px) {
             .sidebar {
                 position: static;
@@ -142,318 +125,286 @@
     </style>
 </head>
 <body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="text-center mb-4">
-                <h3 class="h4 mb-0">TI Consult</h3>
-                <small class="text-muted">Sistema de Gestión</small>
-            </div>
+    <div th:if="${session.usuario == null}" class="container mt-5 text-center">
+        <p>Debe iniciar sesión. <a th:href="@{/usuarios/login}">Ir al login</a></p>
+    </div>
+    <div th:if="${session.usuario != null}">
+        <div class="d-flex">
+            <!-- Sidebar -->
+            <nav class="sidebar">
+                <div class="text-center mb-4">
+                    <h3 class="h4 mb-0">TI Consult</h3>
+                    <small class="text-muted">Sistema de Gestión</small>
+                </div>
+                <ul class="nav flex-column">
+                    <li><a th:href="@{/principal}" class="nav-link active"><i class="bi bi-house-door me-2"></i> Inicio</a></li>
+                    <li><a th:href="@{/servicios}" class="nav-link"><i class="bi bi-tools me-2"></i> Servicios</a></li>
+                    <li th:if="${session.usuario.rol == 'ADMIN'}">
+                        <a th:href="@{/usuarios}" class="nav-link"><i class="bi bi-people me-2"></i> Usuarios</a>
+                    </li>
+                    <li th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE'}">
+                        <a th:href="@{/clientes}" class="nav-link"><i class="bi bi-person-badge me-2"></i> Clientes</a>
+                    </li>
+                    <li><a th:href="@{/perfil}" class="nav-link"><i class="bi bi-person-circle me-2"></i> Perfil</a></li>
+                    <li><a th:href="@{/usuarios/logout}" class="nav-link"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a></li>
+                </ul>
+            </nav>
             
-            <ul class="nav flex-column">
-                <li><a th:href="@{/principal}" class="nav-link active"><i class="bi bi-house-door me-2"></i> Inicio</a></li>
-                <li><a th:href="@{/servicios}" class="nav-link"><i class="bi bi-tools me-2"></i> Servicios</a></li>
-                
-                <li th:if="${session.usuario.rol == 'ADMIN'}">
-                    <a th:href="@{/usuarios}" class="nav-link"><i class="bi bi-people me-2"></i> Usuarios</a>
-                </li>
-                
-                <li th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE'}">
-                    <a th:href="@{/clientes}" class="nav-link"><i class="bi bi-person-badge me-2"></i> Clientes</a>
-                </li>
-                
-                <li><a th:href="@{/perfil}" class="nav-link"><i class="bi bi-person-circle me-2"></i> Perfil</a></li>
-                <li><a th:href="@{/usuarios/logout}" class="nav-link"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a></li>
-            </ul>
-        </nav>
-        
-        <!-- Main Content -->
-        <div class="main-content flex-grow-1">
-            <!-- Header -->
-            <header class="header d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h4 mb-0">Panel Principal</h2>
-                
-                <div class="d-flex align-items-center">
-                    <div class="me-3 text-end">
-                        <small id="currentTime" class="text-muted"></small>
-                    </div>
-                    
-                    <div class="dropdown">
-                        <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle me-2"></i>
-                            <span th:text="${session.usuario.email}"></span>
+            <!-- Main Content -->
+            <div class="main-content flex-grow-1">
+                <!-- Header -->
+                <header class="header d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h4 mb-0">Panel Principal</h2>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3 text-end">
+                            <small id="currentTime" class="text-muted"></small>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-2"></i>
+                                <span th:text="${session.usuario.email}"></span>
                                 <span class="badge bg-secondary ms-1" th:text="${session.usuario.rol}"></span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" th:href="@{/perfil}"><i class="bi bi-person me-2"></i> Perfil</a></li>
-                            <li><a class="dropdown-item" th:href="@{/configuracion}"><i class="bi bi-gear me-2"></i> Configuración</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" th:href="@{/usuarios/logout}"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a></li>
-                        </ul>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" th:href="@{/perfil}"><i class="bi bi-person me-2"></i> Perfil</a></li>
+                                <li><a class="dropdown-item" th:href="@{/configuracion}"><i class="bi bi-gear me-2"></i> Configuración</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" th:href="@{/usuarios/logout}"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a></li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            </header>
-            
-            <div class="container-fluid">
-                <!-- Bienvenida -->
-                <div class="user-card mb-4">
-                    <h4 class="mb-3"><i class="bi bi-stars text-primary me-2"></i> Bienvenido de nuevo, <span th:text="${session.usuario.email.split('@')[0]}"></span>!</h4>
-                    <p class="text-muted mb-0">Aquí tienes un resumen de tu actividad reciente en el sistema de Consultoría TI.</p>
-                </div>
+                </header>
                 
-                <!-- Stats Cards -->
-                <div class="row mb-4 d-flex justify-content-around"> <!-- Estira -->
-                    <div class="col-md-3 mb-3">
-                        <div class="stats-card h-100"> <!-- h-100 para igualar altura -->
-                            <div class="stats-icon bg-primary-light"><i class="bi bi-tools"></i></div>
-                            <h3 th:text="${totalServicios ?: 0}">0</h3>
-                            <p class="text-muted mb-0">Total Servicios</p>
-                        </div>
+                <div class="container-fluid">
+                    <!-- Bienvenida -->
+                    <div class="user-card mb-4">
+                        <h4 class="mb-3"><i class="bi bi-stars text-primary me-2"></i> Bienvenido de nuevo, 
+                            <span th:text="${session.usuario.email != null ? session.usuario.email.split('@')[0] : 'Usuario'}"></span>!
+                        </h4>
+                        <p class="text-muted mb-0">Aquí tienes un resumen de tu actividad reciente en el sistema de Consultoría TI.</p>
                     </div>
-                    <!-- Similar para pendientes y completados, con ?: 0 -->
-                   <div class="col-md-3 mb-3">
-                    <div class="stats-card h-100"> <!-- h-100 para igualar altura -->                        
-                    <div class="stats-icon bg-primary-light"><i class="bi bi-tools"></i></div>
-                     <h3 th:text="${serviciosPendientes != null} ? ${serviciosPendientes} : '0'">0</h3>
-                            <p class="text-muted mb-0">Pendientes</p>
+                    
+                    <!-- Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="stats-card h-100">
+                                <div class="stats-icon bg-primary-light"><i class="bi bi-tools"></i></div>
+                                <h3 th:text="${totalServicios != null ? totalServicios : 0}">0</h3>
+                                <p class="text-muted mb-0">Total Servicios</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stats-card h-100">
+                                <div class="stats-icon bg-warning-light"><i class="bi bi-clock-history"></i></div>
+                                <h3 th:text="${serviciosPendientes != null ? serviciosPendientes : 0}">0</h3>
+                                <p class="text-muted mb-0">Pendientes</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stats-card h-100">
+                                <div class="stats-icon bg-success-light"><i class="bi bi-check-circle"></i></div>
+                                <h3 th:text="${serviciosCompletados != null ? serviciosCompletados : 0}">0</h3>
+                                <p class="text-muted mb-0">Completados</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stats-card h-100">
+                                <div class="stats-icon bg-info-light"><i class="bi bi-people-fill"></i></div>
+                                <h3 th:text="${totalClientes != null ? totalClientes : 0}">0</h3>
+                                <p class="text-muted mb-0">Clientes Activos</p>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="col-md-3 mb-3">
-                        <div class="stats-card h-100"> <!-- h-100 para igualar altura -->
-                            <div class="stats-icon bg-success-light">
-                                <i class="bi bi-check-circle"></i>
-                            </div>
-                            <h3 th:text="${serviciosCompletados != null} ? ${serviciosCompletados} : '0'">0</h3>
-                            <p class="text-muted mb-0">Completados</p>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3 mb-3">
-                        <div class="stats-card h-100"> <!-- h-100 para igualar altura -->
-                            <div class="stats-icon bg-info-light">
-                                <i class="bi bi-people-fill"></i>
-                            </div>
-                            <h3 th:text="${totalClientes != null} ? ${totalClientes} : '0'">0</h3>
-                            <p class="text-muted mb-0">Clientes Activos</p>
-                        </div>
-                    </div>
-                </div>
-                </div>
-                <!-- Quick Actions -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="user-card">
-                            <h4 class="mb-4"><i class="bi bi-lightning-charge text-warning"></i> Acciones Rápidas</h4>
-                            <div class="quick-actions">
-                                <div class="row">
-                                    <div th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE' or session.usuario.rol == 'CLIENTE'}" class="col-md-3 mb-2">
-                                    <a th:href="@{/servicios/nuevo}" class="btn btn-primary w-100">
-                                     <i class="bi bi-plus-circle"></i> Nuevo Servicio
-                                    </a>
-                                     </div>
-                                    
-                                    <div th:if="${session.usuario.rol == 'ADMIN'}" class="col-md-3 mb-2">
-                                    <a th:href="@{/usuarios}" class="btn btn-success w-100">
-                                    <i class="bi bi-person-plus"></i> Gestionar Usuarios
-                                    </a>
-                                    </div>
-                                    
-                                    <div th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE'}" class="col-md-3 mb-2">
-                                        <a th:href="@{/servicios(estado='PENDIENTE')}" class="btn btn-warning w-100">
-                                            <i class="bi bi-clock"></i> Ver Pendientes
-                                        </a>
-                                    </div>
-                                    
-                                    <div class="col-md-3 mb-2">
-                                        <a th:href="@{/servicios}" class="btn btn-info w-100">
-                                            <i class="bi bi-list-check"></i> Ver Todos los Servicios
-                                        </a>
+                    <!-- Quick Actions -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="user-card">
+                                <h4 class="mb-4"><i class="bi bi-lightning-charge text-warning"></i> Acciones Rápidas</h4>
+                                <div class="quick-actions">
+                                    <div class="row">
+                                        <div th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE' or session.usuario.rol == 'CLIENTE'}" class="col-md-3 mb-2">
+                                            <a th:href="@{/servicios/nuevo}" class="btn btn-primary w-100">
+                                                <i class="bi bi-plus-circle"></i> Nuevo Servicio
+                                            </a>
+                                        </div>
+                                        <div th:if="${session.usuario.rol == 'ADMIN'}" class="col-md-3 mb-2">
+                                            <a th:href="@{/usuarios}" class="btn btn-success w-100">
+                                                <i class="bi bi-person-plus"></i> Gestionar Usuarios
+                                            </a>
+                                        </div>
+                                        <div th:if="${session.usuario.rol == 'ADMIN' or session.usuario.rol == 'SOPORTE'}" class="col-md-3 mb-2">
+                                            <a th:href="@{/servicios(estado='PENDIENTE')}" class="btn btn-warning w-100">
+                                                <i class="bi bi-clock"></i> Ver Pendientes
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <a th:href="@{/servicios}" class="btn btn-info w-100">
+                                                <i class="bi bi-list-check"></i> Ver Todos los Servicios
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Recent Activity & User Info -->
-                <div class="row">
-                    <!-- Recent Activity -->
-                    <div class="col-md-8 mb-4">
-                        <div class="recent-activity">
-                            <h4 class="mb-4"><i class="bi bi-activity text-primary"></i> Actividad Reciente</h4>
-                            
-                            <div class="activity-item">
-                                <div class="activity-icon bg-primary-light">
-                                    <i class="bi bi-person-check text-primary"></i>
-                                </div>
-                                <div>
-                                    <strong>Sesión iniciada</strong>
-                                    <p class="mb-0 text-muted small">Has iniciado sesión en el sistema</p>
-                                </div>
-                                <div class="ms-auto text-muted small">
-                                    Hoy
-                                </div>
-                            </div>
-                            
-                            <div class="activity-item">
-                                <div class="activity-icon bg-success-light">
-                                    <i class="bi bi-bell text-success"></i>
-                                </div>
-                                <div>
-                                    <strong>Bienvenido al sistema</strong>
-                                    <p class="mb-0 text-muted small">Tu cuenta está activa y lista para usar</p>
-                                </div>
-                                <div class="ms-auto text-muted small">
-                                    Hoy
-                                </div>
-                            </div>
-                            
-                            <!-- Actividad según rol -->
-                            <div th:if="${session.usuario.rol == 'CLIENTE'}" class="activity-item">
-                                <div class="activity-icon bg-info-light">
-                                    <i class="bi bi-tools text-info"></i>
-                                </div>
-                                <div>
-                                    <strong>Puedes solicitar servicios</strong>
-                                    <p class="mb-0 text-muted small">Haz clic en "Nuevo Servicio" para comenzar</p>
-                                </div>
-                                <div class="ms-auto text-muted small">
-                                    Ahora
-                                </div>
-                            </div>
-                            
-                            <div th:if="${session.usuario.rol == 'SOPORTE'}" class="activity-item">
-                                <div class="activity-icon bg-warning-light">
-                                    <i class="bi bi-clock-history text-warning"></i>
-                                </div>
-                                <div>
-                                    <strong>Servicios pendientes</strong>
-                                    <p class="mb-0 text-muted small">Tienes servicios asignados que requieren atención</p>
-                                </div>
-                                <div class="ms-auto text-muted small">
-                                    Reciente
-                                </div>
-                            </div>
-                            
-                            <div th:if="${session.usuario.rol == 'ADMIN'}" class="activity-item">
-                                <div class="activity-icon bg-danger-light">
-                                    <i class="bi bi-shield-check text-danger"></i>
-                                </div>
-                                <div>
-                                    <strong>Acceso completo habilitado</strong>
-                                    <p class="mb-0 text-muted small">Tienes acceso a todas las funcionalidades del sistema</p>
-                                </div>
-                                <div class="ms-auto text-muted small">
-                                    Hoy
-                                </div>
-                            </div>
-                            
-                            <div class="text-center mt-3">
-                                <a th:href="@{/servicios}" class="btn btn-outline-primary btn-sm">Ver toda la actividad <i class="bi bi-arrow-right"></i></a>
-                            </div>
-                        </div>
-                    </div>
                     
-                    <!-- User Info -->
-                    <div class="col-md-4 mb-4">
-                        <div class="user-card">
-                            <h4 class="mb-4"><i class="bi bi-person-circle text-primary"></i> Información de Cuenta</h4>
-                            
-                            <div class="mb-3">
-                                <strong><i class="bi bi-envelope"></i> Email:</strong>
-                                <p th:text="${session.usuario.email}" class="mb-2"></p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <p><strong>Rol:</strong> <span th:text="${session.usuario.rol}"></span></p>
-                                
-                                    <span th:text="${session.usuario.rol}" 
-                                          th:class="${session.usuario.rol == 'ADMIN'} ? 'badge bg-danger' :
-                                                        ${session.usuario.rol == 'SOPORTE'} ? 'badge bg-warning' : 'badge bg-success'">
-                                    </span>
-                                </p>
-                            </div>
-                            
-                            <div th:if="${session.usuario.cliente != null}" class="mb-3">
-                                <strong><i class="bi bi-building"></i> Empresa:</strong>
-                                <p th:text="${session.usuario.cliente.empresa}" class="mb-2"></p>
-                            </div>
-                            
-                            <div th:if="${session.usuario.cliente != null}" class="mb-3">
-                                <strong><i class="bi bi-geo-alt"></i> Ciudad:</strong>
-                                <p th:text="${session.usuario.cliente.ciudad}" class="mb-2"></p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong><i class="bi bi-toggle-on"></i> Estado:</strong>
-                                <p>
-                                    <span th:if="${session.usuario.estado}" class="badge bg-success">
-                                        <i class="bi bi-check-circle"></i> Activo
-                                    </span>
-                                    <span th:unless="${session.usuario.estado}" class="badge bg-danger">
-                                        <i class="bi bi-x-circle"></i> Inactivo
-                                    </span>
-                                </p>
-                            </div>
-                            
-                            <div class="mt-4 pt-3 border-top">
-                                <a th:href="@{/perfil}" class="btn btn-outline-primary w-100 mb-2">
-                                    <i class="bi bi-pencil-square"></i> Editar Perfil
-                                </a>
-                                <a th:href="@{/usuarios/logout}" class="btn btn-outline-danger w-100">
-                                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Footer -->
-                <footer class="mt-5 pt-4 border-top">
+                    <!-- Recent Activity & User Info -->
                     <div class="row">
-                        <div class="col-md-6">
-                            <p class="text-muted">
-                                <i class="bi bi-gear-fill"></i> Sistema de Consultoría TI v1.0
-                            </p>
+                        <!-- Recent Activity -->
+                        <div class="col-md-8 mb-4">
+                            <div class="recent-activity">
+                                <h4 class="mb-4"><i class="bi bi-activity text-primary"></i> Actividad Reciente</h4>
+                                
+                                <div class="activity-item">
+                                    <div class="activity-icon bg-primary-light">
+                                        <i class="bi bi-person-check text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Sesión iniciada</strong>
+                                        <p class="mb-0 text-muted small">Has iniciado sesión en el sistema</p>
+                                    </div>
+                                    <div class="ms-auto text-muted small">Hoy</div>
+                                </div>
+                                
+                                <div class="activity-item">
+                                    <div class="activity-icon bg-success-light">
+                                        <i class="bi bi-bell text-success"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Bienvenido al sistema</strong>
+                                        <p class="mb-0 text-muted small">Tu cuenta está activa y lista para usar</p>
+                                    </div>
+                                    <div class="ms-auto text-muted small">Hoy</div>
+                                </div>
+                                
+                                <!-- Actividad según rol -->
+                                <div th:if="${session.usuario.rol == 'CLIENTE'}" class="activity-item">
+                                    <div class="activity-icon bg-info-light">
+                                        <i class="bi bi-tools text-info"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Puedes solicitar servicios</strong>
+                                        <p class="mb-0 text-muted small">Haz clic en "Nuevo Servicio" para comenzar</p>
+                                    </div>
+                                    <div class="ms-auto text-muted small">Ahora</div>
+                                </div>
+                                
+                                <div th:if="${session.usuario.rol == 'SOPORTE'}" class="activity-item">
+                                    <div class="activity-icon bg-warning-light">
+                                        <i class="bi bi-clock-history text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Servicios pendientes</strong>
+                                        <p class="mb-0 text-muted small">Tienes servicios asignados que requieren atención</p>
+                                    </div>
+                                    <div class="ms-auto text-muted small">Reciente</div>
+                                </div>
+                                
+                                <div th:if="${session.usuario.rol == 'ADMIN'}" class="activity-item">
+                                    <div class="activity-icon bg-danger-light">
+                                        <i class="bi bi-shield-check text-danger"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Acceso completo habilitado</strong>
+                                        <p class="mb-0 text-muted small">Tienes acceso a todas las funcionalidades del sistema</p>
+                                    </div>
+                                    <div class="ms-auto text-muted small">Hoy</div>
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <a th:href="@{/servicios}" class="btn btn-outline-primary btn-sm">Ver toda la actividad <i class="bi bi-arrow-right"></i></a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6 text-end">
-                            <p class="text-muted">
-                                <i class="bi bi-c-circle"></i> 2024 - 
-                                <span th:text="${#temporals.format(#temporals.createToday(), 'yyyy')}"></span>
-                                | Desarrollado con Spring Boot
-                            </p>
+                        
+                        <!-- User Info -->
+                        <div class="col-md-4 mb-4">
+                            <div class="user-card">
+                                <h4 class="mb-4"><i class="bi bi-person-circle text-primary"></i> Información de Cuenta</h4>
+                                
+                                <div class="mb-3">
+                                    <strong><i class="bi bi-envelope"></i> Email:</strong>
+                                    <p th:text="${session.usuario.email}" class="mb-2"></p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <strong><i class="bi bi-person-badge"></i> Rol:</strong>
+                                    <p>
+                                        <span th:text="${session.usuario.rol}" 
+                                              th:class="${session.usuario.rol == 'ADMIN'} ? 'badge bg-danger' :
+                                                        ${session.usuario.rol == 'SOPORTE'} ? 'badge bg-warning' : 'badge bg-success'">
+                                        </span>
+                                    </p>
+                                </div>
+                                
+                                <div th:if="${session.usuario.cliente != null}" class="mb-3">
+                                    <strong><i class="bi bi-building"></i> Empresa:</strong>
+                                    <p th:text="${session.usuario.cliente.empresa}" class="mb-2"></p>
+                                </div>
+                                
+                                <div th:if="${session.usuario.cliente != null}" class="mb-3">
+                                    <strong><i class="bi bi-geo-alt"></i> Ciudad:</strong>
+                                    <p th:text="${session.usuario.cliente.ciudad}" class="mb-2"></p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <strong><i class="bi bi-toggle-on"></i> Estado:</strong>
+                                    <p>
+                                        <span th:if="${session.usuario.estado}" class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Activo
+                                        </span>
+                                        <span th:unless="${session.usuario.estado}" class="badge bg-danger">
+                                            <i class="bi bi-x-circle"></i> Inactivo
+                                        </span>
+                                    </p>
+                                </div>
+                                
+                                <div class="mt-4 pt-3 border-top">
+                                    <a th:href="@{/perfil}" class="btn btn-outline-primary w-100 mb-2">
+                                        <i class="bi bi-pencil-square"></i> Editar Perfil
+                                    </a>
+                                    <a th:href="@{/usuarios/logout}" class="btn btn-outline-danger w-100">
+                                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </footer>
+                    
+                    <!-- Footer -->
+                    <footer class="mt-5 pt-4 border-top">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="text-muted">
+                                    <i class="bi bi-gear-fill"></i> Sistema de Consultoría TI v1.0
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <p class="text-muted">
+                                    <i class="bi bi-c-circle"></i> 2024 - 
+                                    <span th:text="${#temporals.format(#temporals.createToday(), 'yyyy')}"></span>
+                                    | Desarrollado con Spring Boot
+                                </p>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Hora actual
         function updateTime() {
             const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            };
-            document.getElementById('currentTime').textContent = 
-                now.toLocaleDateString('es-ES', options);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            document.getElementById('currentTime').textContent = now.toLocaleDateString('es-ES', options);
         }
-        
-        // Actualizar cada segundo
         setInterval(updateTime, 1000);
         updateTime();
         
-        // Notificación de bienvenida
         document.addEventListener('DOMContentLoaded', function() {
             const userRole = '[[${session.usuario.rol}]]';
             const welcomeMessages = {
@@ -461,17 +412,14 @@
                 'SOPORTE': 'Bienvenido Soporte Técnico, puedes gestionar servicios asignados.',
                 'CLIENTE': 'Bienvenido Cliente, puedes solicitar y seguir tus servicios.'
             };
-            
             if (welcomeMessages[userRole]) {
                 console.log(welcomeMessages[userRole]);
             }
         });
         
-        // Marcar enlace activo en sidebar
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname;
             const navLinks = document.querySelectorAll('.sidebar .nav-link');
-            
             navLinks.forEach(link => {
                 if (link.getAttribute('href') === currentPath) {
                     link.classList.add('active');
@@ -481,6 +429,5 @@
             });
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

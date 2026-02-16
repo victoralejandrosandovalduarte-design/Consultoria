@@ -8,45 +8,42 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
+
+
+
 @Repository
 public interface ServicioRepository extends JpaRepository<Servicio, Long> {
-    
-    // Consultas derivadas del nombre
+
     List<Servicio> findByEstado(String estado);
-    
+
+    // Para cliente: carga cliente, tipoServicio y comentarios con usuario
+    @Query("SELECT DISTINCT s FROM Servicio s " +
+           "LEFT JOIN FETCH s.cliente c " +
+           "LEFT JOIN FETCH s.tipoServicio ts " +
+           "LEFT JOIN FETCH s.comentarios com " +
+           "LEFT JOIN FETCH com.usuario u " +
+           "WHERE s.cliente.idCliente = :idCliente " +
+           "ORDER BY s.fechaHoraAgendamiento DESC")
+    List<Servicio> findByClienteIdClienteWithDetails(@Param("idCliente") Long idCliente);
+    // Para técnico (soporte)
+    @Query("SELECT DISTINCT s FROM Servicio s " +
+           "LEFT JOIN FETCH s.cliente c " +
+           "LEFT JOIN FETCH s.tipoServicio ts " +
+           "LEFT JOIN FETCH s.comentarios com " +
+           "LEFT JOIN FETCH com.usuario u " +
+           "WHERE s.tecnicoAsignado.idTecnico = :idTecnico " +
+           "ORDER BY s.fechaHoraAgendamiento DESC")
+             List<Servicio> findByTecnicoAsignadoIdTecnicoWithDetails(@Param("idTecnico") Long idTecnico);
+              // Para admin: todos los servicios con detalles
+    @Query("SELECT DISTINCT s FROM Servicio s " +
+           "LEFT JOIN FETCH s.cliente c " +
+           "LEFT JOIN FETCH s.tipoServicio ts " +
+           "LEFT JOIN FETCH s.comentarios com " +
+           "LEFT JOIN FETCH com.usuario u " +
+           "ORDER BY s.fechaHoraAgendamiento DESC")
     // Consulta por cliente (CORRECCIÓN)
-    List<Servicio> findByClienteIdCliente(Long idCliente);
-    
-    // Consulta por técnico (CORRECCIÓN)
-    List<Servicio> findByTecnicoAsignadoIdTecnico(Long idTecnico);
-    
-    // Consulta personalizada con @Query
-    @Query("SELECT s FROM Servicio s WHERE s.estado IN :estados ORDER BY s.fechaHoraAgendamiento")
-    List<Servicio> findByEstados(@Param("estados") List<String> estados);
-    
-    // Consulta con JOIN
-    @Query("SELECT s FROM Servicio s JOIN s.cliente c WHERE c.empresa = :empresa")
-    List<Servicio> findByEmpresaCliente(@Param("empresa") String empresa);
-    
-    // Métodos para conteo (NUEVOS)
+            List<Servicio> findAllWithDetails();
+
+    // Métodos de conteo (se mantienen)
     long countByEstado(String estado);
-    
-    @Query("SELECT COUNT(s) FROM Servicio s WHERE s.cliente.idCliente = :idCliente")
-    long countByClienteIdCliente(@Param("idCliente") Long idCliente);
-    
-    @Query("SELECT COUNT(s) FROM Servicio s WHERE s.tecnicoAsignado.idTecnico = :idTecnico")
-    long countByTecnicoAsignadoIdTecnico(@Param("idTecnico") Long idTecnico);
-    
-    // Consulta para servicios pendientes del día
-    @Query("SELECT s FROM Servicio s WHERE s.estado = 'PENDIENTE' AND DATE(s.fechaHoraAgendamiento) = CURRENT_DATE")
-    List<Servicio> findPendientesHoy();
-    
-    // Consulta para servicios del usuario logueado
-    @Query("SELECT s FROM Servicio s WHERE " +
-           "(:rol = 'ADMIN') OR " +
-           "(:rol = 'SOPORTE' AND s.tecnicoAsignado.idTecnico = :idUsuario) OR " +
-           "(:rol = 'CLIENTE' AND s.cliente.idCliente = :idCliente)")
-    List<Servicio> findByRolUsuario(@Param("rol") String rol, 
-                                    @Param("idUsuario") Long idUsuario,
-                                    @Param("idCliente") Long idCliente);
 }

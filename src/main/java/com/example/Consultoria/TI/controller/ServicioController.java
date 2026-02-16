@@ -84,29 +84,48 @@ public String guardar(@ModelAttribute Servicio servicio,
     if (usuario == null) return "redirect:/usuarios/login";
 
     try {
-        // Para admin/soporte, el cliente viene del formulario
-        if (servicio.getCliente() != null && servicio.getCliente().getIdCliente() != null) {
+        // --- Validación y asignación del cliente ---
+        if ("CLIENTE".equals(usuario.getRol())) {
+            if (usuario.getCliente() == null) {
+                throw new RuntimeException("El usuario no tiene un cliente asociado. Complete su perfil.");
+            }
+            servicio.setCliente(usuario.getCliente());
+        } else {
+            // Admin o Soporte: el cliente debe venir del formulario
+            if (servicio.getCliente() == null || servicio.getCliente().getIdCliente() == null) {
+                throw new RuntimeException("Debe seleccionar un cliente.");
+            }
             Cliente cliente = clienteRepository.findById(servicio.getCliente().getIdCliente())
                     .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
             servicio.setCliente(cliente);
-        } else if ("CLIENTE".equals(usuario.getRol())) {
-            servicio.setCliente(usuario.getCliente());
         }
 
-        if (servicio.getTipoServicio() != null && servicio.getTipoServicio().getIdTipoServicio() != null) {
-            TipoServicio tipo = tipoServicioRepository.findById(servicio.getTipoServicio().getIdTipoServicio())
-                    .orElseThrow(() -> new RuntimeException("Tipo de servicio no encontrado"));
-            servicio.setTipoServicio(tipo);
+        // --- Validación del tipo de servicio ---
+        if (servicio.getTipoServicio() == null || servicio.getTipoServicio().getIdTipoServicio() == null) {
+            throw new RuntimeException("Debe seleccionar un tipo de servicio.");
         }
+        TipoServicio tipo = tipoServicioRepository.findById(servicio.getTipoServicio().getIdTipoServicio())
+                .orElseThrow(() -> new RuntimeException("Tipo de servicio no encontrado"));
+        servicio.setTipoServicio(tipo);
+
+        // (Opcional) Si el estado no viene, asignar por defecto
+        if (servicio.getEstado() == null) {
+            servicio.setEstado("PENDIENTE");
+        }
+
+        // Log para depuración
+        System.out.println("Guardando servicio con cliente ID: " + servicio.getCliente().getIdCliente());
+        System.out.println("Tipo servicio ID: " + servicio.getTipoServicio().getIdTipoServicio());
 
         servicioService.save(servicio);
         redirect.addFlashAttribute("exito", "Servicio guardado exitosamente");
+        return "redirect:/servicios";
+
     } catch (Exception e) {
-        e.printStackTrace(); // Para depuración
+        e.printStackTrace();
         redirect.addFlashAttribute("error", "Error al guardar: " + e.getMessage());
         return "redirect:/servicios/nuevo";
     }
-    return "redirect:/servicios";
 }
     
     @GetMapping("/{id}")

@@ -1,12 +1,11 @@
-// ServicioService.java (updated with completions)
 package com.example.Consultoria.TI.service;
 
 import com.example.Consultoria.TI.modelo.*;
 import com.example.Consultoria.TI.repository.*;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; // voy a usar luego XD
 import java.util.List;
 
 @Service
@@ -22,8 +21,9 @@ public class ServicioService {
     private final DetalleServicioRepository detalleServicioRepository;
     
     // Métodos CRUD básicos
+     @Transactional(readOnly = true)
     public List<Servicio> findAll() {
-        return servicioRepository.findAll();
+        return servicioRepository.findAllWithDetails(); // cambia a la versión con fetch
     }
     
     public Servicio findById(Long id) {
@@ -48,19 +48,17 @@ public Servicio save(Servicio servicio) {
     }
     
     // Método para obtener servicios por cliente 
+   @Transactional(readOnly = true)
     public List<Servicio> obtenerServiciosPorCliente(Long idCliente) {
-        return servicioRepository.findByClienteIdCliente(idCliente);
+        return servicioRepository.findByClienteIdClienteWithDetails(idCliente);
     }
     
     // Método para obtener servicios por técnico
+     @Transactional(readOnly = true)
     public List<Servicio> obtenerServiciosPorTecnico(Long idTecnico) {
-        // Primero, verifica si el técnico existe
-        Tecnico tecnico = tecnicoRepository.findById(idTecnico)
-            .orElseThrow(() -> new RuntimeException("Técnico no encontrado"));
-        
-        // Luego, busca los servicios asignados a ese técnico
-        return servicioRepository.findByTecnicoAsignadoIdTecnico(idTecnico);
+        return servicioRepository.findByTecnicoAsignadoIdTecnicoWithDetails(idTecnico);
     }
+
     
     // Métodos auxiliares para estadísticas
     public long countTotalServicios() {
