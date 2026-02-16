@@ -77,22 +77,28 @@ public String listar(@RequestParam(required = false) String estado, Model model,
     }
     
     @PostMapping
-    public String guardar(@ModelAttribute Servicio servicio, 
-                         HttpSession session,
-                         RedirectAttributes redirect) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null) return "redirect:/usuarios/login";
-        
-        // Validaciones por rol
-        if ("CLIENTE".equals(usuario.getRol()) && !servicio.getCliente().getIdCliente().equals(usuario.getCliente().getIdCliente())) {
-            redirect.addFlashAttribute("exito", "Ticket cargado con éxito. Vuelva más tarde.");
-            return "redirect:/principal";
+public String guardar(@ModelAttribute Servicio servicio,
+                      HttpSession session,
+                      RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null) return "redirect:/usuarios/login";
+
+    try {
+        // Validaciones básicas
+        if (servicio.getCliente() == null || servicio.getCliente().getIdCliente() == null) {
+            throw new RuntimeException("Debe seleccionar un cliente");
         }
-        
-        servicioService.save(servicio); // Corrige: llama al service con generarNumeroOrden
+        if (servicio.getTipoServicio() == null || servicio.getTipoServicio().getIdTipoServicio() == null) {
+            throw new RuntimeException("Debe seleccionar un tipo de servicio");
+        }
+        servicioService.save(servicio);
         redirect.addFlashAttribute("exito", "Servicio guardado exitosamente");
-        return "redirect:/servicios?estado=" + servicio.getEstado(); // Corrige redirect
-        }
+    } catch (Exception e) {
+        redirect.addFlashAttribute("error", "Error al guardar: " + e.getMessage());
+        return "redirect:/servicios/nuevo";
+    }
+    return "redirect:/servicios";
+}
     
     @GetMapping("/{id}")
     public String ver(@PathVariable Long id, Model model, HttpSession session) {

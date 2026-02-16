@@ -227,17 +227,18 @@
                             <input type="number" th:field="*{tiempoEstimado}" class="form-control" min="1">
                         </div>
                         
-                        <div class="mb-3">
-                            <label>Presupuesto</label>
-                            <input type="number" th:field="*{presupuesto}" class="form-control" th:attr="readonly=${session.usuario.rol == 'SOPORTE'}">
+                        <div class="mb-3" th:if="${esAdminOSoporte}">
+                            <label class="form-label">Presupuesto</label>
+                            <div class="input-group">
+                                <select th:field="*{moneda}" class="form-select" style="max-width: 100px;"
+                                        th:disabled="${session.usuario.rol == 'SOPORTE'}">
+                                    <option value="GS">GS</option>
+                                    <option value="USD">USD</option>
+                                </select>
+                                <input type="number" th:field="*{presupuesto}" class="form-control" step="0.01"
+                                       th:disabled="${session.usuario.rol == 'SOPORTE'}">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label>Moneda</label>
-                            <select th:field="*{moneda}" class="form-select" th:attr="disabled=${session.usuario.rol == 'SOPORTE'}">
-                                <option value="PYG">Guaraníes</option><option value="USD">Dólares</option>
-                            </select>
-                        </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Reclamo/Descripción</label>
                             <textarea th:field="*{reclamo}" class="form-control" rows="3"></textarea>

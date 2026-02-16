@@ -182,6 +182,7 @@
                         <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle me-2"></i>
                             <span th:text="${session.usuario.email}"></span>
+                                <span class="badge bg-secondary ms-1" th:text="${session.usuario.rol}"></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" th:href="@{/perfil}"><i class="bi bi-person me-2"></i> Perfil</a></li>
