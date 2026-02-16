@@ -40,23 +40,31 @@ public class PerfilController {
     }
     
     @PostMapping("/actualizar")
-    public String actualizar(@RequestParam String email,
-                             @RequestParam(required = false) String nuevaClave,
-                             RedirectAttributes redirect,
-                             HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null) {
-            return "redirect:/usuarios/login";
-        }
-        
-        usuario.setEmail(email);
+public String actualizar(@RequestParam String email,
+                         @RequestParam(required = false) String nuevaClave,
+                         RedirectAttributes redirect,
+                         HttpSession session) {
+    Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
+    if (usuarioSesion == null) return "redirect:/usuarios/login";
+
+    try {
+        // Actualizar email
+        usuarioService.actualizarEmail(usuarioSesion.getIdUsuario(), email);
+
+        // Actualizar clave si se proporcionó
         if (nuevaClave != null && !nuevaClave.isEmpty()) {
-            usuarioService.cambiarClave(usuario.getIdUsuario(), nuevaClave);
+            usuarioService.cambiarClave(usuarioSesion.getIdUsuario(), nuevaClave);
         }
-        
-        usuarioService.guardar(usuario);
-        session.setAttribute("usuario", usuario); // Actualizar sesión
+
+        // Recargar usuario actualizado en sesión
+        Usuario usuarioActualizado = usuarioService.findById(usuarioSesion.getIdUsuario())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        session.setAttribute("usuario", usuarioActualizado);
+
         redirect.addFlashAttribute("exito", "Perfil actualizado");
-        return "redirect:/perfil";
+    } catch (Exception e) {
+        redirect.addFlashAttribute("error", "Error al actualizar: " + e.getMessage());
     }
+    return "redirect:/perfil";
+}
 }

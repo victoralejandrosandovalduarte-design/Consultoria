@@ -29,25 +29,25 @@ public class ServicioController {
 public String listar(@RequestParam(required = false) String estado, Model model, HttpSession session) {
     Usuario usuario = (Usuario) session.getAttribute("usuario");
     if (usuario == null) return "redirect:/usuarios/login";
-    
+
     List<Servicio> servicios;
     if ("ADMIN".equals(usuario.getRol())) {
         servicios = servicioService.findAll();
     } else if ("SOPORTE".equals(usuario.getRol())) {
         Tecnico tecnico = (Tecnico) session.getAttribute("tecnico");
         if (tecnico == null) {
-            model.addAttribute("error", "Técnico no asignado. Contacta al admin.");
-            return "servicios/lista";
+            tecnico = tecnicoRepository.findByUsuarioIdUsuario(usuario.getIdUsuario())
+                    .orElseThrow(() -> new RuntimeException("Técnico no encontrado"));
+            session.setAttribute("tecnico", tecnico);
         }
         servicios = servicioService.obtenerServiciosPorTecnico(tecnico.getIdTecnico());
-        System.out.println("DEBUG Soporte: Servicios cargados: " + servicios.size()); // Log para verificar
-    } else {
+    } else { // CLIENTE
         servicios = servicioService.obtenerServiciosPorCliente(usuario.getCliente().getIdCliente());
     }
+
     if (estado != null) {
         servicios = servicios.stream().filter(s -> estado.equals(s.getEstado())).toList();
     }
-    
     model.addAttribute("servicios", servicios);
     model.addAttribute("usuario", usuario);
     return "servicios/lista";
@@ -84,16 +84,25 @@ public String guardar(@ModelAttribute Servicio servicio,
     if (usuario == null) return "redirect:/usuarios/login";
 
     try {
-        // Validaciones básicas
-        if (servicio.getCliente() == null || servicio.getCliente().getIdCliente() == null) {
-            throw new RuntimeException("Debe seleccionar un cliente");
+        // Para admin/soporte, el cliente viene del formulario
+        if (servicio.getCliente() != null && servicio.getCliente().getIdCliente() != null) {
+            Cliente cliente = clienteRepository.findById(servicio.getCliente().getIdCliente())
+                    .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+            servicio.setCliente(cliente);
+        } else if ("CLIENTE".equals(usuario.getRol())) {
+            servicio.setCliente(usuario.getCliente());
         }
-        if (servicio.getTipoServicio() == null || servicio.getTipoServicio().getIdTipoServicio() == null) {
-            throw new RuntimeException("Debe seleccionar un tipo de servicio");
+
+        if (servicio.getTipoServicio() != null && servicio.getTipoServicio().getIdTipoServicio() != null) {
+            TipoServicio tipo = tipoServicioRepository.findById(servicio.getTipoServicio().getIdTipoServicio())
+                    .orElseThrow(() -> new RuntimeException("Tipo de servicio no encontrado"));
+            servicio.setTipoServicio(tipo);
         }
+
         servicioService.save(servicio);
         redirect.addFlashAttribute("exito", "Servicio guardado exitosamente");
     } catch (Exception e) {
+        e.printStackTrace(); // Para depuración
         redirect.addFlashAttribute("error", "Error al guardar: " + e.getMessage());
         return "redirect:/servicios/nuevo";
     }

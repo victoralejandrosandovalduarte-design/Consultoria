@@ -366,8 +366,8 @@
                             </div>
                             
                             <div class="mb-3">
-                                <strong><i class="bi bi-person-badge"></i> Rol:</strong>
-                                <p>
+                                <p><strong>Rol:</strong> <span th:text="${session.usuario.rol}"></span></p>
+                                
                                     <span th:text="${session.usuario.rol}" 
                                           th:class="${session.usuario.rol == 'ADMIN'} ? 'badge bg-danger' :
                                                         ${session.usuario.rol == 'SOPORTE'} ? 'badge bg-warning' : 'badge bg-success'">
@@ -431,7 +431,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         // Hora actual
         function updateTime() {
@@ -481,5 +481,6 @@
             });
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

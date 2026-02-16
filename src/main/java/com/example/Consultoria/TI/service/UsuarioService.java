@@ -64,6 +64,12 @@ public class UsuarioService {
         }
         return Optional.empty();
     }
+    @Transactional
+public void actualizarEmail(Long id, String email) {
+    Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    usuario.setEmail(email);
+}
     
     // Método para cambiar clave (futuro uso)
     @Transactional
