@@ -43,7 +43,10 @@ public interface ServicioRepository extends JpaRepository<Servicio, Long> {
            "ORDER BY s.fechaHoraAgendamiento DESC")
     // Consulta por cliente (CORRECCIÓN)
             List<Servicio> findAllWithDetails();
-
+            
+@Query("SELECT COUNT(s) FROM Servicio s WHERE s.cliente.idCliente = :idCliente")
+        
+long countByClienteIdCliente(@Param("idCliente") Long idCliente);
     // Métodos de conteo (se mantienen)
     long countByEstado(String estado);
 }
