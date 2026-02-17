@@ -24,8 +24,8 @@ public class Usuario {
     private String rol;
     private Boolean estado;
     
-    // CAMBIA CascadeType.ALL por CascadeType.MERGE
-    @OneToOne(cascade = CascadeType.MERGE)
+    // CAMBIA CascadeType.ALL (considerar Merge quizás- se debe ajustar)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_cliente")
     private Cliente cliente;
 }

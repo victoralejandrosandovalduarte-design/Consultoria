@@ -26,35 +26,43 @@ public class UsuarioController {
         return "usuarios/registro";
     }
     
-    @PostMapping("/procesarRegistro")
-    public String procesarRegistro(@ModelAttribute Usuario usuario,
-                                  @RequestParam(required = false) String nombre,
-                                  @RequestParam(required = false) String apellido,
-                                  @RequestParam(required = false) String empresa,
-                                  @RequestParam(required = false) String ciRuc,
-                                  @RequestParam(required = false) String ciudad,
-                                  @RequestParam(required = false) String lugarMantenimiento,
-                                  RedirectAttributes redirect) {
-        try {
-            if ("CLIENTE".equals(usuario.getRol())) {
-                Cliente cliente = Cliente.builder()
-                    .nombre(nombre)
-                    .apellido(apellido)
-                    .empresa(empresa)
-                    .ciRuc(ciRuc)
-                    .ciudad(ciudad)
-                    .lugarMantenimiento(lugarMantenimiento)
-                    .build();
-                usuario.setCliente(cliente);
-            }
-            service.guardar(usuario);
-            redirect.addFlashAttribute("exito", "Usuario registrado exitosamente");
-            return "redirect:/usuarios/login";
-        } catch (Exception e) {
-            redirect.addFlashAttribute("error", e.getMessage());
-            return "redirect:/usuarios/registro";
-        }
+  @PostMapping("/procesarRegistro")
+public String procesarRegistro(@ModelAttribute Usuario usuario,
+                               @RequestParam String nombre,
+                               @RequestParam String apellido,
+                               @RequestParam String empresa,
+                               @RequestParam String ciRuc,
+                               @RequestParam String ciudad,
+                               @RequestParam String lugarMantenimiento,
+                               RedirectAttributes redirect) {
+    try {
+        // Forzar rol CLIENTE
+        usuario.setRol("CLIENTE");
+
+        // Crear el cliente con los datos del formulario
+        Cliente cliente = Cliente.builder()
+            .nombre(nombre)
+            .apellido(apellido)
+            .empresa(empresa)
+            .ciRuc(ciRuc)
+            .ciudad(ciudad)
+            .lugarMantenimiento(lugarMantenimiento)
+            .build();
+
+        // Asociar cliente al usuario
+        usuario.setCliente(cliente);
+
+        // Guardar (el servicio se encarga de encriptar y persistir)
+        service.guardar(usuario);
+
+        redirect.addFlashAttribute("exito", "Registro exitoso. Por favor inicia sesión.");
+        return "redirect:/usuarios/login";
+    } catch (Exception e) {
+        e.printStackTrace();
+        redirect.addFlashAttribute("error", "Error en el registro: " + e.getMessage());
+        return "redirect:/usuarios/registro";
     }
+}
     
     @GetMapping("/login")
     public String loginForm(Model model) {

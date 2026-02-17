@@ -33,22 +33,18 @@ public class UsuarioService {
 public Usuario guardar(Usuario usuario) {
     // Validar email único
     if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
-        throw new RuntimeException("El email ya está en uso");
+        throw new RuntimeException("El email ya está registrado");
     }
 
-    // Encriptar clave
+    // Encriptar contraseña
     usuario.setClave(passwordEncoder.encode(usuario.getClave()));
 
-    // Si es CLIENTE y tiene cliente asociado, guardarlo primero
-    if ("CLIENTE".equals(usuario.getRol()) && usuario.getCliente() != null) {
-        Cliente cliente = usuario.getCliente();
-        clienteRepository.save(cliente); // esto asigna ID
-    }
+    // Asegurar que el cliente se guarde en cascada (si la relación tiene CascadeType.ALL)
+    // No es necesario guardar explícitamente el cliente
 
     usuario.setEstado(true);
     return usuarioRepository.save(usuario);
 }
-    
     @Transactional
     public void eliminar(Long id) {
         usuarioRepository.deleteById(id);

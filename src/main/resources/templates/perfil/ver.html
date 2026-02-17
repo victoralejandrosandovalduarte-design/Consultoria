@@ -192,14 +192,15 @@
             <div class="container-fluid">
                 <div class="user-card">
                     <h4 class="mb-4"><i class="bi bi-person-circle text-primary me-2"></i> Mi Perfil</h4>
-                    
-                    <p><strong>Email:</strong> <span th:text="${usuario.email}"></span></p>
-                    <p><strong>Rol:</strong> <span th:text="${usuario.rol}"></span></p>
-                    <p th:if="${usuario.cliente != null}"><strong>Nombre:</strong> <span th:text="${usuario.cliente.nombre} + ' ' + ${usuario.cliente.apellido}"></span></p>
-                    <p th:if="${usuario.cliente != null}"><strong>Empresa:</strong> <span th:text="${usuario.cliente.empresa}"></span></p>
-                    
+                   <div th:if="${usuario.cliente != null}">
+                    <p><strong>Nombre:</strong> <span th:text="${usuario.cliente.nombre} + ' ' + ${usuario.cliente.apellido}"></span></p>
+                    <p><strong>Empresa:</strong> <span th:text="${usuario.cliente.empresa}"></span></p>
+                     <p><strong>CI/RUC:</strong> <span th:text="${usuario.cliente.ciRuc}"></span></p>
+                     <p><strong>Ciudad:</strong> <span th:text="${usuario.cliente.ciudad}"></span></p>
+                     </div>
                     <a th:href="@{/perfil/editar}" class="btn btn-primary mt-3">Editar Perfil</a>
                 </div>
+                
             </div>
         </div>
     </div>

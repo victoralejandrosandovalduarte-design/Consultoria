@@ -52,8 +52,31 @@
                     </div>
 
                     <!-- Formulario de registro -->
+                    
                     <form th:action="@{/usuarios/procesarRegistro}" th:object="${usuario}" method="post">
                         <!-- Información del usuario -->
+                        <input type="hidden" name="rol" value="CLIENTE">
+
+                        <div class="mb-3">
+                            <label>Nombre</label>
+                            <input type="text" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Apellido</label>
+                            <input type="text" name="apellido" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Empresa</label>
+                            <input type="text" name="empresa" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>CI/RUC</label>
+                            <input type="text" name="ciRuc" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Ciudad</label>
+                            <input type="text" name="ciudad" class="form-control">
+                        </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email *</label>
                             <input type="email" 
