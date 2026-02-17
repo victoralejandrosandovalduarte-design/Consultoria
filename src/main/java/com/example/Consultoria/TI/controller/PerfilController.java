@@ -22,10 +22,8 @@ public class PerfilController {
     @GetMapping
     public String verPerfil(Model model, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null) {
-            return "redirect:/usuarios/login";
-        }
-        model.addAttribute("usuario", usuario);
+        if (usuario == null) return "redirect:/usuarios/login";
+                model.addAttribute("usuario", usuario);
         return "perfil/ver"; // Nueva vista
     }
     

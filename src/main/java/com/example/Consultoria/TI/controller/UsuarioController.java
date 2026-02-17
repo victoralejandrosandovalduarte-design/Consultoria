@@ -133,15 +133,19 @@ public String procesarRegistro(@RequestParam String email,
     }
     
     @PostMapping("/{id}/eliminar")
-    public String eliminarUsuario(@PathVariable Long id, RedirectAttributes redirect, HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || !"ADMIN".equals(admin.getRol())) {
-            return "redirect:/principal";
-        }
+public String eliminarUsuario(@PathVariable Long id, RedirectAttributes redirect, HttpSession session) {
+    Usuario admin = (Usuario) session.getAttribute("usuario");
+    if (admin == null || !"ADMIN".equals(admin.getRol())) {
+        return "redirect:/principal";
+    }
+    try {
         service.eliminar(id);
-        redirect.addFlashAttribute("exito", "Usuario eliminado");
-        return "redirect:/usuarios";
-    }    
+        redirect.addFlashAttribute("exito", "Usuario eliminado correctamente.");
+    } catch (RuntimeException e) {
+        redirect.addFlashAttribute("error", e.getMessage());
+    }
+    return "redirect:/usuarios";
+}    
     @GetMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirect) {
         session.invalidate();

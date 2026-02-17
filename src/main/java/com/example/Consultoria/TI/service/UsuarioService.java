@@ -3,6 +3,7 @@ package com.example.Consultoria.TI.service;
 import com.example.Consultoria.TI.modelo.Cliente;
 import com.example.Consultoria.TI.modelo.Usuario;
 import com.example.Consultoria.TI.repository.ClienteRepository;
+import com.example.Consultoria.TI.repository.ServicioRepository;
 import com.example.Consultoria.TI.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,7 +20,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final ClienteRepository clienteRepository;
     private final BCryptPasswordEncoder passwordEncoder; // Inyectar el bean de BCrypt
-
+    private final ServicioRepository servicioRepository;
     public List<Usuario> findAll() {
         return usuarioRepository.findAll();
     }
@@ -41,9 +42,22 @@ public Usuario guardar(Usuario usuario) {
     return usuarioRepository.save(usuario);
 }
     @Transactional
-    public void eliminar(Long id) {
-        usuarioRepository.deleteById(id);
+public void eliminar(Long id) {
+    Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    // Si es cliente, verificar que no tenga servicios
+    if ("CLIENTE".equals(usuario.getRol()) && usuario.getCliente() != null) {
+        long count = servicioRepository.countByClienteIdCliente(usuario.getCliente().getIdCliente());
+        if (count > 0) {
+            throw new RuntimeException(
+                "No se puede eliminar el cliente porque tiene " + count + " servicio(s) asociado(s)."
+            );
+        }
     }
+
+    usuarioRepository.delete(usuario);
+}
     
     public Optional<Usuario> autenticar(String email, String clave) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
@@ -56,6 +70,7 @@ public Usuario guardar(Usuario usuario) {
         }
         return Optional.empty();
     }
+    
     @Transactional
 public void actualizarEmail(Long id, String email) {
     Usuario usuario = usuarioRepository.findById(id)
