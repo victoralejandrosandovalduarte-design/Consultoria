@@ -216,51 +216,59 @@
                              <button type="submit" class="btn btn-danger">Rechazar</button>
                            </form>
                      </div>
-                    <th:if th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}">
-                        <form th:action="@{/servicios/${servicio.idServicio}/estado}" method="post" class="mt-4">
-                            <div class="mb-3">
-                                <label class="form-label">Cambiar Estado</label>
-                                <select name="estado" class="form-select">
-                                    <option th:selected="${servicio.estado == 'PENDIENTE'}" value="PENDIENTE">Pendiente</option>
-                                    <option th:selected="${servicio.estado == 'EN_PROGRESO'}" value="EN_PROGRESO">En Progreso</option>
-                                    <option th:selected="${servicio.estado == 'COMPLETADO'}" value="COMPLETADO">Completado</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Comentario (opcional)</label>
-                                <textarea name="comentario" class="form-control" rows="3"></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Actualizar</button>
-                        </form>
-                    </th:if>
-                </div>
-                
-                <div class="recent-activity">
-                    <h4 class="mb-4"><i class="bi bi-chat-left-text text-primary me-2"></i> Comentarios</h4>
-                    
-                    <div th:each="comentario : ${servicio.comentarios}" class="activity-item">
-                        <div class="activity-icon bg-primary-light">
-                            <i class="bi bi-person-circle"></i>
+                    <!-- Sección para cambiar estado (solo admin o soporte) -->
+                    <div th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}" class="card mt-4">
+                        <div class="card-header">
+                            <h5>Cambiar Estado del Servicio</h5>
                         </div>
-                        <div>
-                            <strong th:text="${comentario.usuario.email}"></strong>
-                            <p class="mb-0" th:text="${comentario.texto}"></p>
-                            <small class="text-muted" th:text="${#temporals.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></small>
+                        <div class="card-body">
+                            <form th:action="@{/servicios/{id}/estado(id=${servicio.idServicio})}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Nuevo Estado</label>
+                                    <select name="estado" class="form-select" required>
+                                        <option value="">Seleccionar...</option>
+                                        <option value="PENDIENTE" th:selected="${servicio.estado == 'PENDIENTE'}">Pendiente</option>
+                                        <option value="EN_PROGRESO" th:selected="${servicio.estado == 'EN_PROGRESO'}">En Progreso</option>
+                                        <option value="COMPLETADO" th:selected="${servicio.estado == 'COMPLETADO'}">Completado</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Comentario (opcional)</label>
+                                    <textarea name="comentario" class="form-control" rows="2" placeholder="Agregar comentario sobre el cambio..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Actualizar Estado</button>
+                            </form>
                         </div>
                     </div>
-                    
-                    <th:if th:if="${usuario.rol == 'SOPORTE' or usuario.rol == 'ADMIN'}">
-                        <form th:action="@{/servicios/${servicio.idServicio}/comentario}" method="post" class="mt-4">
-                            <div class="mb-3">
-                                <label class="form-label">Agregar Comentario</label>
-                                <textarea name="texto" class="form-control" rows="3" required></textarea>
+
+                    <!-- Sección para agregar comentario (solo admin o soporte) -->
+                    <div th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}" class="card mt-4">
+                        <div class="card-header">
+                            <h5>Agregar Comentario</h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/servicios/{id}/comentario(id=${servicio.idServicio})}" method="post">
+                                <div class="mb-3">
+                                    <textarea name="texto" class="form-control" rows="3" placeholder="Escribe tu comentario..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Agregar Comentario</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Comentarios</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(servicio.comentarios)}" class="text-muted">
+                                No hay comentarios.
                             </div>
-                            <button type="submit" class="btn btn-primary">Agregar</button>
-                        </form>
-                    </th:if>
-                    
-                    <div th:if="${servicio.comentarios.isEmpty()}" class="text-muted">
-                        No hay comentarios aún.
+                            <div th:each="comentario : ${servicio.comentarios}" class="border-bottom mb-2 pb-2">
+                                <strong th:text="${comentario.usuario != null ? comentario.usuario.email : 'Usuario'}"></strong>
+                                <small class="text-muted" th:text="${#temporals.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></small>
+                                <p th:text="${comentario.texto}" class="mb-1"></p>
+                            </div>
+                        </div>
                     </div>
                     <!-- Sección de materiales (solo para admin/soporte) -->
 <div th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}" class="recent-activity mt-4">

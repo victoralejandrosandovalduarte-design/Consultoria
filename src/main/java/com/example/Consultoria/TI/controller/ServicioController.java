@@ -106,6 +106,13 @@ public String guardar(@ModelAttribute Servicio servicio,
         if (servicio.getTipoServicio() == null || servicio.getTipoServicio().getIdTipoServicio() == null) {
             throw new RuntimeException("Debe seleccionar un tipo de servicio.");
         }
+        if (servicio.getTecnicoAsignado() != null && servicio.getTecnicoAsignado().getIdTecnico() != null) {
+    Tecnico tecnico = tecnicoRepository.findById(servicio.getTecnicoAsignado().getIdTecnico())
+            .orElseThrow(() -> new RuntimeException("Técnico no encontrado"));
+    servicio.setTecnicoAsignado(tecnico);
+} else {
+    servicio.setTecnicoAsignado(null);
+}
         TipoServicio tipo = tipoServicioRepository.findById(servicio.getTipoServicio().getIdTipoServicio())
                 .orElseThrow(() -> new RuntimeException("Tipo de servicio no encontrado"));
         servicio.setTipoServicio(tipo);
