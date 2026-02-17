@@ -4,6 +4,7 @@ import com.example.Consultoria.TI.modelo.*;
 import com.example.Consultoria.TI.repository.ClienteRepository;
 import com.example.Consultoria.TI.repository.TecnicoRepository;
 import com.example.Consultoria.TI.repository.TipoServicioRepository;
+import com.example.Consultoria.TI.repository.MaterialRepository;
 import com.example.Consultoria.TI.service.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class ServicioController {
     private final ClienteRepository clienteRepository;
     private final TecnicoRepository tecnicoRepository;
     private final TipoServicioRepository tipoServicioRepository;
+    private final MaterialRepository materialRepository;
     
     @GetMapping
 public String listar(@RequestParam(required = false) String estado, Model model, HttpSession session) {
@@ -157,6 +159,7 @@ public String guardar(@ModelAttribute Servicio servicio,
         model.addAttribute("servicio", servicio);
         model.addAttribute("usuario", usuario);
         model.addAttribute("mostrarPresupuesto", !"SOPORTE".equals(usuario.getRol()));
+        model.addAttribute("materiales", materialRepository.findAll());
         return "servicios/ver";
     }
     @GetMapping("/{id}/editar")
@@ -172,21 +175,54 @@ public String guardar(@ModelAttribute Servicio servicio,
         model.addAttribute("tipos", tipoServicioRepository.findAll());
         return "servicios/formulario";
     }
-    
+    @PostMapping("/{id}/detalle")
+public String agregarDetalle(@PathVariable Long id,
+                             @RequestParam Long materialId,
+                             @RequestParam Integer cantidad,
+                             HttpSession session,
+                             RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null || (!"ADMIN".equals(usuario.getRol()) && !"SOPORTE".equals(usuario.getRol()))) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios/" + id;
+    }
+    try {
+        servicioService.agregarDetalle(id, materialId, cantidad);
+        redirect.addFlashAttribute("exito", "Material agregado");
+    } catch (Exception e) {
+        redirect.addFlashAttribute("error", "Error: " + e.getMessage());
+    }
+    return "redirect:/servicios/" + id;
+}
     @PostMapping("/{id}/estado")
-    public String cambiarEstado(@PathVariable Long id,
-                               @RequestParam String estado,
-                               @RequestParam(required = false) String comentario,
-                               HttpSession session,
-                               RedirectAttributes redirect) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || (!"SOPORTE".equals(usuario.getRol()) && !"ADMIN".equals(usuario.getRol()))) {
-            redirect.addFlashAttribute("error", "No autorizado");
-            return "redirect:/servicios";
-        }
-        servicioService.cambiarEstado(id, estado, comentario, usuario);
+public String cambiarEstado(@PathVariable Long id,
+                           @RequestParam String estado,
+                           @RequestParam(required = false) String comentario,
+                           HttpSession session,
+                           RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios";
+    }
+
+    // Validar permisos según rol
+    boolean permitido = false;
+    if ("ADMIN".equals(usuario.getRol())) {
+        permitido = true; // admin puede cambiar a cualquier estado
+    } else if ("SOPORTE".equals(usuario.getRol())) {
+        // Soporte solo puede cambiar a EN_PROGRESO o COMPLETADO
+        permitido = "EN_PROGRESO".equals(estado) || "COMPLETADO".equals(estado);
+    }
+
+    if (!permitido) {
+        redirect.addFlashAttribute("error", "No tiene permiso para cambiar a ese estado");
+        return "redirect:/servicios/" + id;
+    }
+
+    servicioService.cambiarEstado(id, estado, comentario, usuario);
     redirect.addFlashAttribute("exito", "Estado actualizado");
-    return "redirect:/servicios/" + id; // Evita Whitelabel
+    return "redirect:/servicios/" + id;
 }
     
     

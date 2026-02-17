@@ -84,12 +84,12 @@ public class DataInitializer {
 
     private Cliente crearCliente() {
         Cliente cliente = new Cliente();
-        cliente.setNombre("Juan");
-        cliente.setApellido("Pérez");
-        cliente.setEmpresa("Empresa Ejemplo S.A.");
-        cliente.setCiRuc("1234567890");
-        cliente.setCiudad("Quito");
-        cliente.setLugarMantenimiento("Oficina Central");
+        cliente.setNombre("Victor");
+        cliente.setApellido("Sandoval");
+        cliente.setEmpresa("Empresa S.A.");
+        cliente.setCiRuc("5592530");
+        cliente.setCiudad("Mariano");
+        cliente.setLugarMantenimiento("Central casa propia");
         return clienteRepository.save(cliente);
     }    
 

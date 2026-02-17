@@ -204,6 +204,9 @@
                                 <span th:if="${servicio.tipoServicio != null}" th:text="${servicio.tipoServicio.nombre}"></span>
                                 <span th:if="${servicio.tipoServicio == null}">Tipo no asignado</span>
                             </p>
+                                <p class="text-muted" th:if="${servicio.tecnicoAsignado != null}">
+                                <strong>Técnico:</strong> <span th:text="${servicio.tecnicoAsignado.nombre}"></span>
+                                        </p>
                             <p class="text-muted">
                                 <strong>Fecha:</strong>
                                 <span th:text="${#temporals.format(servicio.fechaHoraAgendamiento, 'dd/MM/yyyy HH:mm')}"></span>
@@ -213,7 +216,7 @@
                                                   (servicio.estado == 'EN_PROGRESO' ? 'bg-info' : 
                                                   (servicio.estado == 'COMPLETADO' ? 'bg-success' : 'bg-secondary'))}"
                                   th:text="${servicio.estado}"></span>
-
+                                
                             <!-- Comentarios recientes (protegido contra null) -->
                             <div class="mt-3" th:if="${servicio.comentarios != null and not servicio.comentarios.isEmpty()}">
                                 <h6>Comentarios recientes:</h6>

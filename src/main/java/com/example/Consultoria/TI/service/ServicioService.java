@@ -98,20 +98,34 @@ public Servicio save(Servicio servicio) {
         }
     }
     @Transactional
-    public void agregarDetalle(Long servicioId, Long materialId, Integer cantidad) {
-        Servicio servicio = findById(servicioId);
-        Material material = materialRepository.findById(materialId)
-            .orElseThrow(() -> new RuntimeException("Material no encontrado"));
-        
-        DetalleServicio detalle = new DetalleServicio();
-        detalle.setMaterial(material);
-        detalle.setCantidad(cantidad);
-        detalle.setSubtotal(cantidad * material.getPrecio());
-        
-        servicio.addDetalle(detalle);
-        servicio.setPresupuesto(servicio.getPresupuesto() + detalle.getSubtotal()); // Actualizar presupuesto
-        save(servicio);
+public void agregarDetalle(Long servicioId, Long materialId, Integer cantidad) {
+    Servicio servicio = findById(servicioId);
+    Material material = materialRepository.findById(materialId)
+        .orElseThrow(() -> new RuntimeException("Material no encontrado"));
+
+    DetalleServicio detalle = new DetalleServicio();
+    detalle.setMaterial(material);
+    detalle.setCantidad(cantidad);
+    detalle.setSubtotal(cantidad * material.getPrecio());
+
+    servicio.addDetalle(detalle);
+    // Actualizar presupuesto
+    if (servicio.getPresupuesto() == null) {
+        servicio.setPresupuesto(0.0);
     }
+    servicio.setPresupuesto(servicio.getPresupuesto() + detalle.getSubtotal());
+    save(servicio);
+}
+@Transactional
+public void eliminarDetalle(Long detalleId) {
+    DetalleServicio detalle = detalleServicioRepository.findById(detalleId)
+        .orElseThrow(() -> new RuntimeException("Detalle no encontrado"));
+    Servicio servicio = detalle.getServicio();
+    servicio.setPresupuesto(servicio.getPresupuesto() - detalle.getSubtotal());
+    servicio.getDetalles().remove(detalle);
+    detalleServicioRepository.delete(detalle);
+    save(servicio);
+}
     
     @Transactional
     public void agregarComentario(Long servicioId, String texto, Usuario usuario) {
