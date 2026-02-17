@@ -19,7 +19,7 @@ public class ServicioService {
     private final TipoServicioRepository tipoServicioRepository;
     private final MaterialRepository materialRepository;
     private final DetalleServicioRepository detalleServicioRepository;
-    
+    private LocalDateTime fechaCreacion;
     // Métodos CRUD básicos
      @Transactional(readOnly = true)
     public List<Servicio> findAll() {
@@ -34,6 +34,9 @@ public class ServicioService {
     @Transactional
 public Servicio save(Servicio servicio) {
     generarNumeroOrden(servicio);
+    if (servicio.getFechaCreacion() == null) {
+    servicio.setFechaCreacion(LocalDateTime.now());
+}
     return servicioRepository.save(servicio);
 }
     

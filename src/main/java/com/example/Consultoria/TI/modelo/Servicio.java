@@ -26,6 +26,7 @@ public class Servicio {
     private String promocion;
     private String descuento;
     private String reclamo;
+    private LocalDateTime fechaCreacion;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idCliente", nullable = false)
