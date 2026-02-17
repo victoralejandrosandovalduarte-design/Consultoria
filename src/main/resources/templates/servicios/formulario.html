@@ -213,15 +213,15 @@
                                 <option th:each="tipo : ${tipos}" th:value="${tipo.idTipoServicio}" th:text="${tipo.nombre}"></option>
                             </select>
                         </div>
-                        <div th:if="${esAdminOSoporte and servicio.idServicio != null}">
-                        <div class="mb-3">
-                            <label class="form-label">Técnico Asignado</label>
-                            <select th:field="*{tecnicoAsignado.idTecnico}" class="form-select">
-                                <option value="">Seleccione un técnico</option>
-                                <option th:each="tecnico : ${tecnicos}" th:value="${tecnico.idTecnico}" th:text="${tecnico.nombre}"></option>
-                            </select>
+                        <div th:if="${esAdminOSoporte}">
+                            <div class="mb-3">
+                                <label class="form-label">Técnico Asignado</label>
+                                <select th:field="*{tecnicoAsignado.idTecnico}" class="form-select">
+                                    <option value="">Seleccione un técnico</option>
+                                    <option th:each="tecnico : ${tecnicos}" th:value="${tecnico.idTecnico}" th:text="${tecnico.nombre}"></option>
+                                </select>
+                            </div>
                         </div>
-                      </div>
                         <div class="mb-3">
                             <label class="form-label">Tiempo Estimado (horas)</label>
                             <input type="number" th:field="*{tiempoEstimado}" class="form-control" min="1">
