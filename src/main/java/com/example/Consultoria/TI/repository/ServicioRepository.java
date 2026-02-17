@@ -20,6 +20,7 @@ public interface ServicioRepository extends JpaRepository<Servicio, Long> {
     @Query("SELECT DISTINCT s FROM Servicio s " +
            "LEFT JOIN FETCH s.cliente c " +
            "LEFT JOIN FETCH s.tipoServicio ts " +
+            "LEFT JOIN FETCH s.tecnicoAsignado ta " +
            "LEFT JOIN FETCH s.comentarios com " +
            "LEFT JOIN FETCH com.usuario u " +
            "WHERE s.cliente.idCliente = :idCliente " +
@@ -29,6 +30,7 @@ public interface ServicioRepository extends JpaRepository<Servicio, Long> {
     @Query("SELECT DISTINCT s FROM Servicio s " +
            "LEFT JOIN FETCH s.cliente c " +
            "LEFT JOIN FETCH s.tipoServicio ts " +
+            "LEFT JOIN FETCH s.tecnicoAsignado ta " +
            "LEFT JOIN FETCH s.comentarios com " +
            "LEFT JOIN FETCH com.usuario u " +
            "WHERE s.tecnicoAsignado.idTecnico = :idTecnico " +
@@ -38,15 +40,14 @@ public interface ServicioRepository extends JpaRepository<Servicio, Long> {
     @Query("SELECT DISTINCT s FROM Servicio s " +
            "LEFT JOIN FETCH s.cliente c " +
            "LEFT JOIN FETCH s.tipoServicio ts " +
+            "LEFT JOIN FETCH s.tecnicoAsignado ta " +
            "LEFT JOIN FETCH s.comentarios com " +
            "LEFT JOIN FETCH com.usuario u " +
            "ORDER BY s.fechaHoraAgendamiento DESC")
     // Consulta por cliente (CORRECCIÓN)
             List<Servicio> findAllWithDetails();
-            
+            long countByEstado(String estado);
 @Query("SELECT COUNT(s) FROM Servicio s WHERE s.cliente.idCliente = :idCliente")
-        
 long countByClienteIdCliente(@Param("idCliente") Long idCliente);
-    // Métodos de conteo (se mantienen)
-    long countByEstado(String estado);
+    // Métodos de conteo (se mantienen)       
 }

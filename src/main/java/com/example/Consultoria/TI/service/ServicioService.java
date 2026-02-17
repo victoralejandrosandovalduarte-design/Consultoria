@@ -20,6 +20,8 @@ public class ServicioService {
     private final MaterialRepository materialRepository;
     private final DetalleServicioRepository detalleServicioRepository;
     private LocalDateTime fechaCreacion;
+    
+    
     // Métodos CRUD básicos
      @Transactional(readOnly = true)
     public List<Servicio> findAll() {
