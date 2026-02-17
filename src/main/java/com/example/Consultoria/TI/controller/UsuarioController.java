@@ -27,32 +27,35 @@ public class UsuarioController {
     }
     
   @PostMapping("/procesarRegistro")
-public String procesarRegistro(@ModelAttribute Usuario usuario,
+public String procesarRegistro(@RequestParam String email,
+                               @RequestParam String clave,
                                @RequestParam String nombre,
                                @RequestParam String apellido,
                                @RequestParam String empresa,
                                @RequestParam String ciRuc,
-                               @RequestParam String ciudad,
-                               @RequestParam String lugarMantenimiento,
+                               @RequestParam(required = false) String ciudad,
+                               @RequestParam(required = false) String lugarMantenimiento,
                                RedirectAttributes redirect) {
     try {
-        // Forzar rol CLIENTE
+        // Crear usuario
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setClave(clave); // se encriptará en el servicio
         usuario.setRol("CLIENTE");
+        usuario.setEstado(true);
 
-        // Crear el cliente con los datos del formulario
+        // Crear cliente
         Cliente cliente = Cliente.builder()
-            .nombre(nombre)
-            .apellido(apellido)
-            .empresa(empresa)
-            .ciRuc(ciRuc)
-            .ciudad(ciudad)
-            .lugarMantenimiento(lugarMantenimiento)
-            .build();
-
-        // Asociar cliente al usuario
+                .nombre(nombre)
+                .apellido(apellido)
+                .empresa(empresa)
+                .ciRuc(ciRuc)
+                .ciudad(ciudad)
+                .lugarMantenimiento(lugarMantenimiento)
+                .build();
         usuario.setCliente(cliente);
 
-        // Guardar (el servicio se encarga de encriptar y persistir)
+        // Guardar (el servicio encripta la clave y guarda en cascada)
         service.guardar(usuario);
 
         redirect.addFlashAttribute("exito", "Registro exitoso. Por favor inicia sesión.");
