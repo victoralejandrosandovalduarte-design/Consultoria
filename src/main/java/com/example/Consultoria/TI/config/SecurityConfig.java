@@ -1,4 +1,3 @@
-// SecurityConfig.java (new)
 package com.example.Consultoria.TI.config;
 
 import org.springframework.context.annotation.Bean;
