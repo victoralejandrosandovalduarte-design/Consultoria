@@ -207,10 +207,10 @@
                                 <p class="text-muted" th:if="${servicio.tecnicoAsignado != null}">
                                 <strong>Técnico:</strong> <span th:text="${servicio.tecnicoAsignado.nombre}"></span>
                                         </p>
-                            <p class="text-muted">
-                                <strong>Fecha:</strong>
-                                <span th:text="${#temporals.format(servicio.fechaHoraAgendamiento, 'dd/MM/yyyy HH:mm')}"></span>
-                            </p>
+                                        <p class="text-muted">
+                                            <strong>Creado:</strong>
+                                            <span th:text="${#temporals.format(servicio.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </p>
                             <span class="badge status-badge"
                                   th:classappend="${servicio.estado == 'PENDIENTE' ? 'bg-warning' : 
                                                   (servicio.estado == 'EN_PROGRESO' ? 'bg-info' : 
