@@ -38,11 +38,6 @@ public Usuario guardar(Usuario usuario) {
 
     // Encriptar contraseña
     usuario.setClave(passwordEncoder.encode(usuario.getClave()));
-
-    // Asegurar que el cliente se guarde en cascada (si la relación tiene CascadeType.ALL)
-    // No es necesario guardar explícitamente el cliente
-
-    usuario.setEstado(true);
     return usuarioRepository.save(usuario);
 }
     @Transactional
