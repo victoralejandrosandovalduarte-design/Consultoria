@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 
 
@@ -49,5 +50,15 @@ public interface ServicioRepository extends JpaRepository<Servicio, Long> {
             long countByEstado(String estado);
 @Query("SELECT COUNT(s) FROM Servicio s WHERE s.cliente.idCliente = :idCliente")
 long countByClienteIdCliente(@Param("idCliente") Long idCliente);
-    // Métodos de conteo (se mantienen)       
+    // Métodos de conteo (se mantienen)   2.-cargar un servicio con todas sus relaciones:    
+@Query("SELECT DISTINCT s FROM Servicio s " +
+       "LEFT JOIN FETCH s.cliente " +
+       "LEFT JOIN FETCH s.tipoServicio " +
+       "LEFT JOIN FETCH s.comentarios com " +
+       "LEFT JOIN FETCH com.usuario " +
+       "LEFT JOIN FETCH s.detalles det " +
+       "LEFT JOIN FETCH det.material " +
+       "LEFT JOIN FETCH s.tecnicoAsignado " +
+       "WHERE s.idServicio = :id")
+Optional<Servicio> findByIdWithDetails(@Param("id") Long id);
 }

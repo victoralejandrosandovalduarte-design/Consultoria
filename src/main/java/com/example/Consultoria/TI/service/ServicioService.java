@@ -21,7 +21,11 @@ public class ServicioService {
     private final DetalleServicioRepository detalleServicioRepository;
     private LocalDateTime fechaCreacion;
     
-    
+    @Transactional(readOnly = true)
+public Servicio findByIdWithDetails(Long id) {
+    return servicioRepository.findByIdWithDetails(id)
+        .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+}
     // Métodos CRUD básicos
      @Transactional(readOnly = true)
     public List<Servicio> findAll() {
@@ -40,6 +44,18 @@ public Servicio save(Servicio servicio) {
     servicio.setFechaCreacion(LocalDateTime.now());
 }
     return servicioRepository.save(servicio);
+}
+@Transactional
+public void cancelarServicio(Long id, String comentario, Usuario usuario) {
+    Servicio servicio = findById(id);
+    servicio.setEstado("CANCELADO");
+    agregarComentario(id, comentario, usuario);
+    save(servicio);
+}
+@Transactional
+public void eliminar(Long id) {
+    // Verificar que no haya restricciones (opcional)
+    servicioRepository.deleteById(id);
 }
     
     @Transactional
