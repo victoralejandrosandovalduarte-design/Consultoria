@@ -168,87 +168,131 @@
             </div>
 
             <!-- SECCIÓN DE ACCIONES POR ROL -->
-            <div class="user-card mb-4">
-                <h4 class="mb-3">Acciones</h4>
+            <!-- Resumen de costos (visible para todos) -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Resumen de costos</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total materiales:</strong> <span th:text="${totalMateriales}"></span></p>
+                    <p><strong>Costo mano de obra:</strong> <span th:text="${costoManoObra}"></span></p>
+                    <p><strong>Presupuesto total:</strong> <span th:text="${presupuestoTotal}"></span></p>
+                </div>
+            </div>
+
+            <!-- Acciones según rol y estado -->
+            <div class="mt-4">
+                <!-- ADMIN / SOPORTE -->
+                <div th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}">
+                    <!-- Si está pendiente, mostrar formulario para actualizar mano de obra y botón generar presupuesto -->
+                    <div th:if="${servicio.estado == 'PENDIENTE'}">
+                        <form th:action="@{/servicios/{id}/mano-obra(id=${servicio.idServicio})}" method="post">
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <label>Costo mano de obra</label>
+                                    <input type="number" name="costoManoObra" class="form-control" step="0.01" th:value="${costoManoObra}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-warning mt-4">Actualizar mano de obra</button>
+                                </div>
+                            </div>
+                        </form>
+                        <form th:action="@{/servicios/{id}/generar-presupuesto(id=${servicio.idServicio})}" method="post">
+                            <button type="submit" class="btn btn-success" onclick="return confirm('¿Generar presupuesto? El cliente deberá aprobarlo.')">
+                                <i class="bi bi-file-earmark-text"></i> Generar Presupuesto
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Si está esperando aprobación, mostrar mensaje (no pueden hacer nada hasta que cliente acepte) -->
+                    <div th:if="${servicio.estado == 'ESPERANDO_APROBACION'}">
+                        <p class="text-info">Esperando aprobación del cliente.</p>
+                    </div>
+
+                    <!-- Si está pendiente de asignación de técnico, mostrar selector de técnico -->
+                    <div th:if="${servicio.estado == 'PENDIENTE_ASIGNACION_TECNICO'}">
+                        <form th:action="@{/servicios/{id}/asignar-tecnico(id=${servicio.idServicio})}" method="post">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <select name="tecnicoId" class="form-select" required>
+                                        <option value="">Seleccionar técnico</option>
+                                        <option th:each="tecnico : ${tecnicos}" th:value="${tecnico.idTecnico}" th:text="${tecnico.nombre}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary">Asignar y comenzar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Si está en progreso, mostrar formulario para cambiar a completado -->
+                    <div th:if="${servicio.estado == 'EN_PROGRESO'}">
+                        <form th:action="@{/servicios/{id}/estado(id=${servicio.idServicio})}" method="post">
+                            <input type="hidden" name="estado" value="COMPLETADO">
+                            <div class="mb-3">
+                                <label class="form-label">Comentario (opcional)</label>
+                                <textarea name="comentario" class="form-control" rows="2"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success">Marcar como Completado</button>
+                        </form>
+                    </div>
+
+                    <!-- Si está completado o cancelado, no mostrar acciones -->
+                </div>
 
                 <!-- CLIENTE -->
                 <div th:if="${usuario.rol == 'CLIENTE'}">
-                    <!-- Si está pendiente, puede cancelar -->
-                    <div th:if="${servicio.estado == 'PENDIENTE'}">
-                        <form th:action="@{/servicios/{id}/cancelar(id=${servicio.idServicio})}" method="post">
-                            <div class="mb-3">
-                                <label class="form-label">Motivo de cancelación</label>
-                                <textarea name="comentario" class="form-control" rows="2" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('¿Cancelar este servicio?')">
-                                <i class="bi bi-x-circle"></i> Cancelar servicio
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Si está esperando aprobación, puede aceptar/rechazar -->
+                    <!-- Si está esperando aprobación, mostrar presupuesto y botones aceptar/rechazar -->
                     <div th:if="${servicio.estado == 'ESPERANDO_APROBACION'}">
-                        <form th:action="@{/servicios/{id}/aceptar(id=${servicio.idServicio})}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-success" onclick="return confirm('¿Aceptar el presupuesto?')">
-                                <i class="bi bi-check-circle"></i> Aceptar
-                            </button>
-                        </form>
-                        <form th:action="@{/servicios/{id}/rechazar(id=${servicio.idServicio})}" method="post" style="display:inline;">
-                            <div class="mb-2">
-                                <textarea name="comentario" class="form-control" placeholder="Motivo de rechazo" rows="2" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('¿Rechazar el presupuesto?')">
-                                <i class="bi bi-x-circle"></i> Rechazar
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- SOPORTE Y ADMIN -->
-                <div th:if="${usuario.rol == 'SOPORTE' or usuario.rol == 'ADMIN'}">
-                    <form th:action="@{/servicios/{id}/estado(id=${servicio.idServicio})}" method="post">
-                        <div class="row">
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Nuevo estado</label>
-                                <select name="estado" class="form-select">
-                                    <option value="EN_PROGRESO" th:if="${servicio.estado == 'PENDIENTE'}">En Progreso</option>
-                                    <option value="COMPLETADO" th:if="${servicio.estado == 'EN_PROGRESO'}">Completado</option>
-                                    <option value="CANCELADO" th:if="${usuario.rol == 'ADMIN' and servicio.estado == 'PENDIENTE'}">Cancelado</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Comentario (opcional)</label>
-                                <textarea name="comentario" class="form-control" rows="1" placeholder="Comentario sobre el cambio"></textarea>
-                            </div>
-                            <div class="col-md-2 mb-2 align-self-end">
-                                <button type="submit" class="btn btn-primary">Actualizar</button>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5>Presupuesto total: <span th:text="${presupuestoTotal}"></span></h5>
+                                <!-- Botón para descargar (futuro) -->
+                                <a href="#" class="btn btn-outline-primary mb-3">Descargar presupuesto (PDF)</a>
+                                <form th:action="@{/servicios/{id}/aceptar(id=${servicio.idServicio})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-success" onclick="return confirm('¿Aceptar el presupuesto?')">Aceptar</button>
+                                </form>
+                                <form th:action="@{/servicios/{id}/rechazar(id=${servicio.idServicio})}" method="post" style="display:inline;">
+                                    <div class="mb-2">
+                                        <textarea name="comentario" class="form-control" placeholder="Motivo de rechazo" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Rechazar el presupuesto?')">Rechazar</button>
+                                </form>
                             </div>
                         </div>
-                    </form>
-
-                    <!-- Agregar comentario adicional -->
-                    <div class="mt-3">
-                        <form th:action="@{/servicios/{id}/comentario(id=${servicio.idServicio})}" method="post">
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <textarea name="texto" class="form-control" placeholder="Escribe un comentario..." required></textarea>
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="submit" class="btn btn-outline-primary">Comentar</button>
-                                </div>
-                            </div>
-                        </form>
                     </div>
 
-                    <!-- Admin: botón eliminar -->
-                    <div th:if="${usuario.rol == 'ADMIN'}" class="mt-3">
-                        <form th:action="@{/servicios/{id}/eliminar(id=${servicio.idServicio})}" method="post">
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('¿Eliminar este servicio permanentemente?')">
-                                <i class="bi bi-trash"></i> Eliminar servicio
-                            </button>
-                        </form>
+                    <!-- Si está pendiente, mostrar mensaje de que están preparando presupuesto -->
+                    <div th:if="${servicio.estado == 'PENDIENTE'}">
+                        <p>Su solicitud está siendo evaluada. Pronto recibirá un presupuesto.</p>
                     </div>
+
+                    <!-- Si está en progreso o completado, solo mostrar información -->
                 </div>
+
+                <!-- Admin: botón de eliminar (dentro de acciones) -->
+                <div th:if="${usuario.rol == 'ADMIN'}" class="mt-3">
+                    <form th:action="@{/servicios/{id}/eliminar(id=${servicio.idServicio})}" method="post">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('¿Eliminar este servicio permanentemente?')">
+                            <i class="bi bi-trash"></i> Eliminar servicio
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Agregar comentario adicional -->
+            <div class="mt-3">
+                <form th:action="@{/servicios/{id}/comentario(id=${servicio.idServicio})}" method="post">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <textarea name="texto" class="form-control" placeholder="Escribe un comentario..." required></textarea>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-outline-primary">Comentar</button>
+                        </div>
+                    </div>
+                </form>
             </div>
 
             <!-- COMENTARIOS EXISTENTES -->
