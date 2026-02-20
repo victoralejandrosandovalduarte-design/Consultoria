@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -136,39 +137,83 @@ public String guardar(@ModelAttribute Servicio servicio,
         return "redirect:/servicios/nuevo";
     }
 }
+@PostMapping("/{id}/cancelar")
+public String cancelar(@PathVariable Long id,
+                       @RequestParam String comentario,
+                       HttpSession session,
+                       RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null || !"CLIENTE".equals(usuario.getRol())) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios";
+    }
+    Servicio servicio = servicioService.findById(id);
+    if (!servicio.getCliente().getIdCliente().equals(usuario.getCliente().getIdCliente())) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios";
+    }
+    // Solo puede cancelar si está en PENDIENTE
+    if (!"PENDIENTE".equals(servicio.getEstado())) {
+        redirect.addFlashAttribute("error", "Solo se pueden cancelar servicios en estado PENDIENTE");
+        return "redirect:/servicios/" + id;
+    }
+    servicioService.cancelarServicio(id, comentario, usuario);
+    redirect.addFlashAttribute("exito", "Servicio cancelado");
+    return "redirect:/servicios/" + id;
+}
+@PostMapping("/{id}/eliminar")
+public String eliminarServicio(@PathVariable Long id,
+                               HttpSession session,
+                               RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null || !"ADMIN".equals(usuario.getRol())) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios";
+    }
+    try {
+        servicioService.eliminar(id);
+        redirect.addFlashAttribute("exito", "Servicio eliminado correctamente");
+    } catch (Exception e) {
+        redirect.addFlashAttribute("error", "Error al eliminar: " + e.getMessage());
+    }
+    return "redirect:/servicios";
+}
     
     @GetMapping("/{id}")
-    public String ver(@PathVariable Long id, Model model, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null) return "redirect:/usuarios/login";
-        
-        Servicio servicio = servicioService.findById(id);
-        
-        // Verificar acceso
-        boolean accesoPermitido = false;
-        if ("ADMIN".equals(usuario.getRol())) {
+public String ver(@PathVariable Long id, Model model, HttpSession session) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null) return "redirect:/usuarios/login";
+
+    // Usar el método que carga todas las relaciones
+    Servicio servicio = servicioService.findByIdWithDetails(id);
+
+    // Verificar acceso (igual que antes)
+    boolean accesoPermitido = false;
+    if ("ADMIN".equals(usuario.getRol())) {
+        accesoPermitido = true;
+    } else if ("SOPORTE".equals(usuario.getRol())) {
+        Tecnico tecnico = (Tecnico) session.getAttribute("tecnico");
+        if (tecnico != null && servicio.getTecnicoAsignado() != null && 
+            servicio.getTecnicoAsignado().getIdTecnico().equals(tecnico.getIdTecnico())) {
             accesoPermitido = true;
-        } else if ("SOPORTE".equals(usuario.getRol())) {
-            Tecnico tecnico = (Tecnico) session.getAttribute("tecnico");
-            if (servicio.getTecnicoAsignado() != null && servicio.getTecnicoAsignado().getIdTecnico().equals(tecnico.getIdTecnico())) {
-                accesoPermitido = true;
-            }
-        } else if ("CLIENTE".equals(usuario.getRol())) {
-            if (servicio.getCliente().getIdCliente().equals(usuario.getCliente().getIdCliente())) {
-                accesoPermitido = true;
-            }
         }
-        
-        if (!accesoPermitido) {
-            return "redirect:/servicios";
+    } else if ("CLIENTE".equals(usuario.getRol())) {
+        if (servicio.getCliente() != null && 
+            servicio.getCliente().getIdCliente().equals(usuario.getCliente().getIdCliente())) {
+            accesoPermitido = true;
         }
-        
-        model.addAttribute("servicio", servicio);
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("mostrarPresupuesto", !"SOPORTE".equals(usuario.getRol()));
-        model.addAttribute("materiales", materialRepository.findAll());
-        return "servicios/ver";
     }
+
+    if (!accesoPermitido) {
+        return "redirect:/servicios";
+    }
+
+    model.addAttribute("servicio", servicio);
+    model.addAttribute("usuario", usuario);
+    model.addAttribute("mostrarPresupuesto", !"SOPORTE".equals(usuario.getRol()));
+    model.addAttribute("materiales", materialRepository.findAll());
+    return "servicios/ver";
+}
     @GetMapping("/{id}/editar")
     public String editarForm(@PathVariable Long id, Model model, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
@@ -213,13 +258,17 @@ public String cambiarEstado(@PathVariable Long id,
         return "redirect:/servicios";
     }
 
+    Servicio servicio = servicioService.findById(id);
+    String estadoActual = servicio.getEstado();
+
     // Validar permisos según rol
     boolean permitido = false;
     if ("ADMIN".equals(usuario.getRol())) {
         permitido = true; // admin puede cambiar a cualquier estado
     } else if ("SOPORTE".equals(usuario.getRol())) {
-        // Soporte solo puede cambiar a EN_PROGRESO o COMPLETADO
-        permitido = "EN_PROGRESO".equals(estado) || "COMPLETADO".equals(estado);
+        // Soporte solo puede cambiar de PENDIENTE a EN_PROGRESO o de EN_PROGRESO a COMPLETADO
+        permitido = ("PENDIENTE".equals(estadoActual) && "EN_PROGRESO".equals(estado)) ||
+                    ("EN_PROGRESO".equals(estadoActual) && "COMPLETADO".equals(estado));
     }
 
     if (!permitido) {
