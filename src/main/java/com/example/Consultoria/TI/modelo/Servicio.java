@@ -14,6 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+
 public class Servicio {
 
     @Id
@@ -72,4 +73,5 @@ public class Servicio {
         detalles.add(detalle);
         detalle.setServicio(this);
     }
+    private Double costoManoObra;
 }
