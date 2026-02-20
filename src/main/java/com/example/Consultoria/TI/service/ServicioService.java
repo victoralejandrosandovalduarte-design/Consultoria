@@ -101,23 +101,23 @@ public void eliminar(Long id) {
     }
     
     @Transactional
-    public void aceptarServicio(Long id) {
-        Servicio servicio = findById(id);
-        if ("ESPERANDO_APROBACION".equals(servicio.getEstado())) {
-            servicio.setEstado("EN_PROGRESO");
-            save(servicio);
-        }
+public void aceptarServicio(Long id) {
+    Servicio servicio = findById(id);
+    if ("ESPERANDO_APROBACION".equals(servicio.getEstado())) {
+        servicio.setEstado("PENDIENTE_ASIGNACION_TECNICO");
+        save(servicio);
     }
+}
     
     @Transactional
-    public void rechazarServicio(Long id, String comentario, Usuario usuario) {
-        Servicio servicio = findById(id);
-        if ("ESPERANDO_APROBACION".equals(servicio.getEstado())) {
-            servicio.setEstado("CANCELADO");
-            agregarComentario(id, comentario, usuario);
-            save(servicio);
-        }
+public void rechazarServicio(Long id, String comentario, Usuario usuario) {
+    Servicio servicio = findById(id);
+    if ("ESPERANDO_APROBACION".equals(servicio.getEstado())) {
+        servicio.setEstado("CANCELADO");
+        agregarComentario(id, comentario, usuario);
+        save(servicio);
     }
+}
     @Transactional
 public void agregarDetalle(Long servicioId, Long materialId, Integer cantidad) {
     Servicio servicio = findById(servicioId);
@@ -128,7 +128,7 @@ public void agregarDetalle(Long servicioId, Long materialId, Integer cantidad) {
     detalle.setMaterial(material);
     detalle.setCantidad(cantidad);
     detalle.setSubtotal(cantidad * material.getPrecio());
-
+    recalcularPresupuesto(servicio);
     servicio.addDetalle(detalle);
     // Actualizar presupuesto
     if (servicio.getPresupuesto() == null) {
@@ -160,6 +160,26 @@ public void eliminarDetalle(Long detalleId) {
         servicio.addComentario(comentario);
         save(servicio);
     }
+    @Transactional
+public void generarPresupuesto(Long id) {
+    Servicio servicio = findById(id);
+    if (!"PENDIENTE".equals(servicio.getEstado())) {
+        throw new RuntimeException("El servicio no está en estado pendiente");
+    }
+    servicio.setEstado("ESPERANDO_APROBACION");
+    save(servicio);
+}
+
+@Transactional
+public void asignarTecnico(Long id, Tecnico tecnico) {
+    Servicio servicio = findById(id);
+    if (!"PENDIENTE_ASIGNACION_TECNICO".equals(servicio.getEstado())) {
+        throw new RuntimeException("El servicio no está esperando asignación de técnico");
+    }
+    servicio.setTecnicoAsignado(tecnico);
+    servicio.setEstado("EN_PROGRESO");
+    save(servicio);
+}
     
     @Transactional
     public void cambiarEstado(Long id, String nuevoEstado, String comentario, Usuario usuario) {
@@ -186,7 +206,12 @@ public void eliminarDetalle(Long detalleId) {
         }
         return List.of();
     }
-    
+    private void recalcularPresupuesto(Servicio servicio) {
+    double totalMateriales = servicio.getDetalles().stream()
+            .mapToDouble(DetalleServicio::getSubtotal).sum();
+    double costoManoObra = servicio.getCostoManoObra() != null ? servicio.getCostoManoObra() : 0.0;
+    servicio.setPresupuesto(totalMateriales + costoManoObra);
+}
     // Método para generar número de orden automático
     @Transactional
     public Servicio generarNumeroOrden(Servicio servicio) {
@@ -196,4 +221,14 @@ public void eliminarDetalle(Long detalleId) {
         }
         return servicio;
     }
+    @Transactional
+public void actualizarManoObra(Long id, Double costoManoObra) {
+    Servicio servicio = findById(id);
+    servicio.setCostoManoObra(costoManoObra);
+    recalcularPresupuesto(servicio);
+    save(servicio);
+}
+
+
+
 }

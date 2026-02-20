@@ -137,6 +137,44 @@ public String guardar(@ModelAttribute Servicio servicio,
         return "redirect:/servicios/nuevo";
     }
 }
+@PostMapping("/{id}/generar-presupuesto")
+public String generarPresupuesto(@PathVariable Long id,
+                                  HttpSession session,
+                                  RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null || (!"ADMIN".equals(usuario.getRol()) && !"SOPORTE".equals(usuario.getRol()))) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios/" + id;
+    }
+    try {
+        servicioService.generarPresupuesto(id);
+        redirect.addFlashAttribute("exito", "Presupuesto generado, ahora el cliente debe aprobarlo.");
+    } catch (Exception e) {
+        redirect.addFlashAttribute("error", e.getMessage());
+    }
+    return "redirect:/servicios/" + id;
+}
+
+@PostMapping("/{id}/asignar-tecnico")
+public String asignarTecnico(@PathVariable Long id,
+                             @RequestParam Long tecnicoId,
+                             HttpSession session,
+                             RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null || (!"ADMIN".equals(usuario.getRol()) && !"SOPORTE".equals(usuario.getRol()))) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios/" + id;
+    }
+    try {
+        Tecnico tecnico = tecnicoRepository.findById(tecnicoId)
+                .orElseThrow(() -> new RuntimeException("Técnico no encontrado"));
+        servicioService.asignarTecnico(id, tecnico);
+        redirect.addFlashAttribute("exito", "Técnico asignado, servicio en progreso.");
+    } catch (Exception e) {
+        redirect.addFlashAttribute("error", e.getMessage());
+    }
+    return "redirect:/servicios/" + id;
+}
 @PostMapping("/{id}/cancelar")
 public String cancelar(@PathVariable Long id,
                        @RequestParam String comentario,
@@ -184,10 +222,16 @@ public String ver(@PathVariable Long id, Model model, HttpSession session) {
     Usuario usuario = (Usuario) session.getAttribute("usuario");
     if (usuario == null) return "redirect:/usuarios/login";
 
-    // Usar el método que carga todas las relaciones
+    // Cargar servicio con todas las relaciones
     Servicio servicio = servicioService.findByIdWithDetails(id);
 
-    // Verificar acceso (igual que antes)
+    // Calcular totales
+    double totalMateriales = servicio.getDetalles().stream()
+            .mapToDouble(DetalleServicio::getSubtotal).sum();
+    double costoManoObra = servicio.getCostoManoObra() != null ? servicio.getCostoManoObra() : 0.0;
+    double presupuestoTotal = totalMateriales + costoManoObra;
+
+    // Verificar acceso (según rol)
     boolean accesoPermitido = false;
     if ("ADMIN".equals(usuario.getRol())) {
         accesoPermitido = true;
@@ -208,10 +252,16 @@ public String ver(@PathVariable Long id, Model model, HttpSession session) {
         return "redirect:/servicios";
     }
 
+    // Agregar atributos al modelo (sin duplicados)
     model.addAttribute("servicio", servicio);
     model.addAttribute("usuario", usuario);
+    model.addAttribute("totalMateriales", totalMateriales);
+    model.addAttribute("costoManoObra", costoManoObra);
+    model.addAttribute("presupuestoTotal", presupuestoTotal);
     model.addAttribute("mostrarPresupuesto", !"SOPORTE".equals(usuario.getRol()));
     model.addAttribute("materiales", materialRepository.findAll());
+    model.addAttribute("tecnicos", tecnicoRepository.findAll());
+
     return "servicios/ver";
 }
     @GetMapping("/{id}/editar")
@@ -354,4 +404,5 @@ public String cambiarEstado(@PathVariable Long id,
         redirect.addFlashAttribute("exito", "Servicio rechazado");
         return "redirect:/servicios/" + id;
     }
+    
     }
