@@ -169,6 +169,13 @@ public void generarPresupuesto(Long id) {
     servicio.setEstado("ESPERANDO_APROBACION");
     save(servicio);
 }
+@Transactional
+public void actualizarManoObra(Long id, Double costoManoObra) {
+    Servicio servicio = findById(id);
+    servicio.setCostoManoObra(costoManoObra);
+    recalcularPresupuesto(servicio);
+    save(servicio);
+}
 
 @Transactional
 public void asignarTecnico(Long id, Tecnico tecnico) {
@@ -221,13 +228,6 @@ public void asignarTecnico(Long id, Tecnico tecnico) {
         }
         return servicio;
     }
-    @Transactional
-public void actualizarManoObra(Long id, Double costoManoObra) {
-    Servicio servicio = findById(id);
-    servicio.setCostoManoObra(costoManoObra);
-    recalcularPresupuesto(servicio);
-    save(servicio);
-}
 
 
 
