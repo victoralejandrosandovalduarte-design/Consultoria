@@ -334,7 +334,7 @@
                         <select name="materialId" class="form-select" required>
                             <option value="">Seleccionar material</option>
                             <option th:each="material : ${materiales}" th:value="${material.idMaterial}"
-                                    th:text="${material.nombre} + ' ($' + ${material.precio} + ')'"></option>
+                                    th:text="${material.nombre} + ' (' + ${material.precio} + ' Gs.)'"></option>
                         </select>
                     </div>
                     <div class="col-auto">
