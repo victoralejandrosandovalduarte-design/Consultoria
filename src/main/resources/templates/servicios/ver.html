@@ -249,7 +249,7 @@
                             <div class="card-body">
                                 <h5>Presupuesto total: <span th:text="${presupuestoTotal}"></span></h5>
                                 <!-- Botón para descargar (futuro) -->
-                                <a href="#" class="btn btn-outline-primary mb-3">Descargar presupuesto (PDF)</a>
+                                <a th:href="@{/servicios/{id}/pdf(id=${servicio.idServicio})}" class="btn btn-outline-primary mb-3" target="_blank">Descargar presupuesto (PDF)</a>
                                 <form th:action="@{/servicios/{id}/aceptar(id=${servicio.idServicio})}" method="post" style="display:inline;">
                                     <button type="submit" class="btn btn-success" onclick="return confirm('¿Aceptar el presupuesto?')">Aceptar</button>
                                 </form>
