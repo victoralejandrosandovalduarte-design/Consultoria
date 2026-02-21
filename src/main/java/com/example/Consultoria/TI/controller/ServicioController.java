@@ -6,13 +6,26 @@ import com.example.Consultoria.TI.repository.TecnicoRepository;
 import com.example.Consultoria.TI.repository.TipoServicioRepository;
 import com.example.Consultoria.TI.repository.MaterialRepository;
 import com.example.Consultoria.TI.service.*;
-import jakarta.servlet.http.HttpSession;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -421,5 +434,106 @@ public String actualizarManoObra(@PathVariable Long id,
         redirect.addFlashAttribute("exito", "Servicio rechazado");
         return "redirect:/servicios/" + id;
     }
+    //GENERAR PRESUPUESTO:
+    @GetMapping("/{id}/pdf")
+public void generarPdf(@PathVariable Long id, 
+                       HttpServletResponse response, 
+                       HttpSession session) throws IOException {
+    
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        return;
+    }
+
+    Servicio servicio = servicioService.findByIdWithDetails(id);
+    
+    // Verificar acceso: solo el cliente del servicio o admin pueden ver el PDF
+    boolean accesoPermitido = false;
+    if ("ADMIN".equals(usuario.getRol())) {
+        accesoPermitido = true;
+    } else if ("CLIENTE".equals(usuario.getRol())) {
+        if (servicio.getCliente() != null && 
+            servicio.getCliente().getIdCliente().equals(usuario.getCliente().getIdCliente())) {
+            accesoPermitido = true;
+        }
+    }
+    
+    if (!accesoPermitido) {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        return;
+    }
+
+    // Configurar respuesta HTTP
+    response.setContentType("application/pdf");
+    response.setHeader("Content-Disposition", "attachment; filename=presupuesto_" + servicio.getNumeroOrden() + ".pdf");
+
+    // Calcular totales
+    double totalMateriales = servicio.getDetalles().stream()
+            .mapToDouble(DetalleServicio::getSubtotal).sum();
+    double costoManoObra = servicio.getCostoManoObra() != null ? servicio.getCostoManoObra() : 0.0;
+    double total = totalMateriales + costoManoObra;
+
+    // Crear documento PDF con iText
+    Document document = new Document();
+    try {
+        PdfWriter.getInstance(document, response.getOutputStream());
+        document.open();
+
+        // Título
+        Font tituloFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
+        Paragraph titulo = new Paragraph("Presupuesto de Servicio", tituloFont);
+        titulo.setAlignment(Element.ALIGN_CENTER);
+        document.add(titulo);
+        document.add(new Paragraph(" "));
+
+        // Información general
+        document.add(new Paragraph("Número de orden: " + servicio.getNumeroOrden()));
+        document.add(new Paragraph("Cliente: " + servicio.getCliente().getNombre() + " " + servicio.getCliente().getApellido()));
+        document.add(new Paragraph("Empresa: " + (servicio.getCliente().getEmpresa() != null ? servicio.getCliente().getEmpresa() : "N/A")));
+        document.add(new Paragraph("Tipo de servicio: " + servicio.getTipoServicio().getNombre()));
+        document.add(new Paragraph("Descripción: " + (servicio.getReclamo() != null ? servicio.getReclamo() : "Sin descripción")));
+        document.add(new Paragraph("Fecha de creación: " + (servicio.getFechaCreacion() != null ? servicio.getFechaCreacion().toString() : "N/A")));
+        document.add(new Paragraph(" "));
+
+        // Tabla de materiales
+        document.add(new Paragraph("Detalle de materiales:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100);
+        table.addCell("Material");
+        table.addCell("Cantidad");
+        table.addCell("Precio Unit. (Gs.)");
+        table.addCell("Subtotal (Gs.)");
+
+        if (servicio.getDetalles().isEmpty()) {
+            table.addCell("No hay materiales");
+            table.addCell("-");
+            table.addCell("-");
+            table.addCell("-");
+        } else {
+            for (DetalleServicio detalle : servicio.getDetalles()) {
+                table.addCell(detalle.getMaterial().getNombre());
+                table.addCell(String.valueOf(detalle.getCantidad()));
+                table.addCell(String.format("%,.0f", detalle.getMaterial().getPrecio()));
+                table.addCell(String.format("%,.0f", detalle.getSubtotal()));
+            }
+        }
+        document.add(table);
+        document.add(new Paragraph(" "));
+
+        // Resumen de costos
+        document.add(new Paragraph("Total materiales: " + String.format("%,.0f", totalMateriales) + " Gs."));
+        document.add(new Paragraph("Costo mano de obra: " + String.format("%,.0f", costoManoObra) + " Gs."));
+        document.add(new Paragraph("TOTAL PRESUPUESTO: " + String.format("%,.0f", total) + " Gs.", 
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
+
+        document.close();
+    } catch (DocumentException e) {
+        e.printStackTrace();
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+}
+    
+    
     
     }
