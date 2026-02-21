@@ -330,7 +330,24 @@ public String cambiarEstado(@PathVariable Long id,
     redirect.addFlashAttribute("exito", "Estado actualizado");
     return "redirect:/servicios/" + id;
 }
-    
+    @PostMapping("/{id}/mano-obra")
+public String actualizarManoObra(@PathVariable Long id,
+                                 @RequestParam Double costoManoObra,
+                                 HttpSession session,
+                                 RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null || (!"ADMIN".equals(usuario.getRol()) && !"SOPORTE".equals(usuario.getRol()))) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios/" + id;
+    }
+    try {
+        servicioService.actualizarManoObra(id, costoManoObra);
+        redirect.addFlashAttribute("exito", "Costo de mano de obra actualizado");
+    } catch (Exception e) {
+        redirect.addFlashAttribute("error", e.getMessage());
+    }
+    return "redirect:/servicios/" + id;
+}
     
     @PostMapping("/{id}/comentario")
     public String agregarComentario(@PathVariable Long id,
