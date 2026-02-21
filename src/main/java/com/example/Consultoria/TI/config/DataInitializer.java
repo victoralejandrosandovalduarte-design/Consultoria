@@ -56,6 +56,7 @@ public class DataInitializer {
             {"Hardware", "false"},
             {"Software", "true"},
             {"Capacitación", "true"}
+                
         };
         
         for (String[] tipo : tipos) {
@@ -68,11 +69,20 @@ public class DataInitializer {
 
     private void crearMateriales() {
         Object[][] materiales = {
-            {"Router WiFi", 150.00},
-            {"Switch 24 puertos", 300.00},
-            {"Cable UTP Cat6", 2.50},
-            {"Memoria RAM 8GB", 45.00},
-            {"Disco SSD 500GB", 60.00}
+            {"Router WiFi", 150000.000},
+            {"Switch 24 puertos", 300000.000},
+            {"Cable UTP Cat6", 25000.00},
+            {"Memoria RAM 8GB", 450000.000},
+            {"M.2 SSD 250GB", 800000.000},
+            {"Disco HDD 2 TB", 600000.000},
+{"Disco SSD 1TB", 1800000.000},
+{"Mano de Obra Especializada", 150000.000},
+{"Hora Desarrollo", 190000.000},
+{"Teclado", 150000.0},
+{"Mouse", 120000.0},
+{"DVR Hikvision", 6000000.000},
+{"Hikvision - Hilook", 1800000.000},
+{"Relevamiento Técnico", 120000.000}
         }; 
         for (Object[] material : materiales) {
             Material m = new Material();
@@ -122,7 +132,7 @@ public class DataInitializer {
         soporte = usuarioRepository.save(soporte);
         // Crear técnico asociado
         Tecnico tecnico = new Tecnico();
-        tecnico.setNombre("Carlos Rodríguez");
+        tecnico.setNombre("El CHAPO");
         tecnico.setUsuario(soporte);
         tecnicoRepository.save(tecnico);
     }
