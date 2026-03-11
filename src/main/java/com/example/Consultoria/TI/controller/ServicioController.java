@@ -91,7 +91,24 @@ public String listar(@RequestParam(required = false) String estado, Model model,
         
         return "servicios/formulario";
     }
-    
+    @PostMapping("/{id}/detalle/{detalleId}/eliminar")
+public String eliminarDetalle(@PathVariable Long id,
+                              @PathVariable Long detalleId,
+                              HttpSession session,
+                              RedirectAttributes redirect) {
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null || (!"ADMIN".equals(usuario.getRol()) && !"SOPORTE".equals(usuario.getRol()))) {
+        redirect.addFlashAttribute("error", "No autorizado");
+        return "redirect:/servicios/" + id;
+    }
+    try {
+        servicioService.eliminarDetalle(detalleId);
+        redirect.addFlashAttribute("exito", "Material eliminado");
+    } catch (Exception e) {
+        redirect.addFlashAttribute("error", "Error al eliminar: " + e.getMessage());
+    }
+    return "redirect:/servicios/" + id;
+}
     @PostMapping
 public String guardar(@ModelAttribute Servicio servicio,
                       HttpSession session,

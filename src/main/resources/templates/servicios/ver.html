@@ -173,15 +173,15 @@
             <!-- SECCIÓN DE ACCIONES POR ROL -->
             <!-- Resumen de costos (visible para todos) -->
             <div class="card mb-4">
-                <div class="card-header">
-                    <h5>Resumen de costos</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Total materiales:</strong> <span th:text="${totalMateriales}"></span></p>
-                    <p><strong>Costo mano de obra:</strong> <span th:text="${costoManoObra}"></span></p>
-                    <p><strong>Presupuesto total:</strong> <span th:text="${presupuestoTotal}"></span></p>
-                </div>
-            </div>
+    <div class="card-header">
+        <h5>Resumen de costos</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Total materiales:</strong> <span th:text="${#numbers.formatDecimal(totalMateriales, 0, 'COMMA', 0, 'POINT')} + ' Gs.'"></span></p>
+        <p><strong>Costo mano de obra:</strong> <span th:text="${#numbers.formatDecimal(costoManoObra, 0, 'COMMA', 0, 'POINT')} + ' Gs.'"></span></p>
+        <p><strong>Presupuesto total:</strong> <span th:text="${#numbers.formatDecimal(presupuestoTotal, 0, 'COMMA', 0, 'POINT')} + ' Gs.'"></span></p>
+    </div>
+</div>
 
             <!-- MATERIALES (solo admin/soporte) - MOVED HERE -->
             <div th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}" class="recent-activity">
@@ -194,11 +194,21 @@
                         <tr th:each="detalle : ${servicio.detalles}">
                             <td th:text="${detalle.material.nombre}"></td>
                             <td th:text="${detalle.cantidad}"></td>
-                            <td th:text="${detalle.material.precio}"></td>
-                            <td th:text="${detalle.subtotal}"></td>
+                            <td th:text="${#numbers.formatDecimal(detalle.material.precio, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td>
+                                <form th:action="@{/servicios/{id}/detalle/{detalleId}/eliminar(id=${servicio.idServicio}, detalleId=${detalle.idDetalle})}" 
+                                      method="post" 
+                                      style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                            onclick="return confirm('¿Eliminar este material?')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(servicio.detalles)}">
-                            <td colspan="4" class="text-muted text-center">No hay materiales asignados.</td>
+                            <td colspan="5" class="text-muted text-center">No hay materiales asignados.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -209,7 +219,7 @@
                         <select name="materialId" class="form-select" required>
                             <option value="">Seleccionar material</option>
                             <option th:each="material : ${materiales}" th:value="${material.idMaterial}"
-                                    th:text="${material.nombre} + ' (' + ${material.precio} + ' Gs.)'"></option>
+                                   th:text="${material.nombre} + ' (' + ${#numbers.formatDecimal(material.precio, 0, 'COMMA', 0, 'POINT')} + ' Gs.)'"></option>
                         </select>
                     </div>
                     <div class="col-auto">
