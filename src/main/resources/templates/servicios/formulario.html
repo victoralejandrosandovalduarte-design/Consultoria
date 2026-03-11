@@ -222,10 +222,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Tiempo Estimado (horas)</label>
-                            <input type="number" th:field="*{tiempoEstimado}" class="form-control" min="1">
-                        </div>
+                  
                         
                         <div class="mb-3" th:if="${esAdminOSoporte}">
                             <label class="form-label">Presupuesto</label>
@@ -246,7 +243,7 @@
                         
                         <button type="submit" class="btn btn-primary">Guardar Servicio</button>
                         <!--modificacion-->
-                        <button type="submit" class="btn btn-primary">Guardar Ticket</button>
+                     
                         <a th:href="@{/principal}" class="btn btn-outline-secondary">Cancelar</a>
                     </form>
                 </div>

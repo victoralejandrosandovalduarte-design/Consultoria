@@ -147,7 +147,7 @@
                         <p><strong>Fecha de creación:</strong> 
                             <span th:text="${#temporals.format(servicio.fechaCreacion != null ? servicio.fechaCreacion : servicio.fechaHoraAgendamiento, 'dd/MM/yyyy HH:mm')}"></span>
                         </p>
-                        <p><strong>Tiempo estimado:</strong> <span th:text="${servicio.tiempoEstimado} + ' horas'"></span></p>
+                      
                     </div>
                 </div>
                 <div class="row mt-2">
@@ -157,7 +157,10 @@
                 </div>
                 <div th:if="${servicio.presupuesto != null}" class="row mt-2">
                     <div class="col-12">
-                        <p><strong>Presupuesto:</strong> <span th:text="${servicio.moneda} + ' ' + ${servicio.presupuesto}"></span></p>
+                        <p><strong>Presupuesto:</strong>
+                            <span th:if="${servicio.moneda != null}" th:text="${servicio.moneda + ' ' + servicio.presupuesto}"></span>
+                            <span th:if="${servicio.moneda == null}" th:text="${servicio.presupuesto} + ' Gs.'"></span>
+                        </p>
                     </div>
                 </div>
                 <div th:if="${servicio.tecnicoAsignado != null}" class="row mt-2">
@@ -180,6 +183,44 @@
                 </div>
             </div>
 
+            <!-- MATERIALES (solo admin/soporte) - MOVED HERE -->
+            <div th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}" class="recent-activity">
+                <h4 class="mb-3">Materiales / Insumos</h4>
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr><th>Material</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="detalle : ${servicio.detalles}">
+                            <td th:text="${detalle.material.nombre}"></td>
+                            <td th:text="${detalle.cantidad}"></td>
+                            <td th:text="${detalle.material.precio}"></td>
+                            <td th:text="${detalle.subtotal}"></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(servicio.detalles)}">
+                            <td colspan="4" class="text-muted text-center">No hay materiales asignados.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Formulario agregar material -->
+                <form th:action="@{/servicios/{id}/detalle(id=${servicio.idServicio})}" method="post" class="row g-2">
+                    <div class="col-auto">
+                        <select name="materialId" class="form-select" required>
+                            <option value="">Seleccionar material</option>
+                            <option th:each="material : ${materiales}" th:value="${material.idMaterial}"
+                                    th:text="${material.nombre} + ' (' + ${material.precio} + ' Gs.)'"></option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <input type="number" name="cantidad" class="form-control" placeholder="Cantidad" min="1" required>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Agregar</button>
+                    </div>
+                </form>
+            </div>
+
             <!-- Acciones según rol y estado -->
             <div class="mt-4">
                 <!-- ADMIN / SOPORTE -->
@@ -193,7 +234,7 @@
                                     <input type="number" name="costoManoObra" class="form-control" step="0.01" th:value="${costoManoObra}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <button type="submit" class="btn btn-warning mt-4">Actualizar mano de obra</button>
+                                    <button type="submit" class="btn btn-warning mt-4">Costo de mano de obra</button>
                                 </div>
                             </div>
                         </form>
@@ -306,44 +347,6 @@
                     <small class="text-muted" th:text="${#temporals.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></small>
                     <p th:text="${comentario.texto}" class="mb-1"></p>
                 </div>
-            </div>
-
-            <!-- MATERIALES (solo admin/soporte) -->
-            <div th:if="${usuario.rol == 'ADMIN' or usuario.rol == 'SOPORTE'}" class="recent-activity">
-                <h4 class="mb-3">Materiales / Insumos</h4>
-                <table class="table table-sm table-bordered">
-                    <thead class="table-light">
-                        <tr><th>Material</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="detalle : ${servicio.detalles}">
-                            <td th:text="${detalle.material.nombre}"></td>
-                            <td th:text="${detalle.cantidad}"></td>
-                            <td th:text="${detalle.material.precio}"></td>
-                            <td th:text="${detalle.subtotal}"></td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(servicio.detalles)}">
-                            <td colspan="4" class="text-muted text-center">No hay materiales asignados.</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- Formulario agregar material -->
-                <form th:action="@{/servicios/{id}/detalle(id=${servicio.idServicio})}" method="post" class="row g-2">
-                    <div class="col-auto">
-                        <select name="materialId" class="form-select" required>
-                            <option value="">Seleccionar material</option>
-                            <option th:each="material : ${materiales}" th:value="${material.idMaterial}"
-                                    th:text="${material.nombre} + ' (' + ${material.precio} + ' Gs.)'"></option>
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <input type="number" name="cantidad" class="form-control" placeholder="Cantidad" min="1" required>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Agregar</button>
-                    </div>
-                </form>
             </div>
 
         </div> <!-- container-fluid -->

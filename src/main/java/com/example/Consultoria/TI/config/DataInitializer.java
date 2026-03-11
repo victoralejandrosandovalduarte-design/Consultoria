@@ -76,7 +76,6 @@ public class DataInitializer {
             {"M.2 SSD 250GB", 800000.000},
             {"Disco HDD 2 TB", 600000.000},
 {"Disco SSD 1TB", 1800000.000},
-{"Mano de Obra Especializada", 150000.000},
 {"Hora Desarrollo", 190000.000},
 {"Teclado", 150000.0},
 {"Mouse", 120000.0},
