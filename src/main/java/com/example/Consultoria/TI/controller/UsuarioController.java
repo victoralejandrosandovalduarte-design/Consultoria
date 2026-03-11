@@ -16,72 +16,73 @@ import java.util.Optional;
 @RequestMapping("/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
-    
+
     private final UsuarioService service;
-    
+
     @GetMapping("/registro")
     public String registroForm(Model model) {
         model.addAttribute("usuario", new Usuario());
-        model.addAttribute("cliente", new Cliente()); // Agregamos cliente para el form
+        model.addAttribute("cliente", new Cliente());
         return "usuarios/registro";
     }
-    
-  @PostMapping("/procesarRegistro")
-public String procesarRegistro(@RequestParam String email,
-                               @RequestParam String clave,
-                               @RequestParam String nombre,
-                               @RequestParam String apellido,
-                               @RequestParam String empresa,
-                               @RequestParam String ciRuc,
-                               @RequestParam(required = false) String ciudad,
-                               @RequestParam(required = false) String lugarMantenimiento,
-                               RedirectAttributes redirect) {
-    try {
-        // Crear usuario
-        Usuario usuario = new Usuario();
-        usuario.setEmail(email);
-        usuario.setClave(clave); // se encriptará en el servicio
-        usuario.setRol("CLIENTE");
-        usuario.setEstado(true);
 
-        // Crear cliente
-        Cliente cliente = Cliente.builder()
-                .nombre(nombre)
-                .apellido(apellido)
-                .empresa(empresa)
-                .ciRuc(ciRuc)
-                .ciudad(ciudad)
-                .lugarMantenimiento(lugarMantenimiento)
-                .build();
-        usuario.setCliente(cliente);
+    @PostMapping("/procesarRegistro")
+    public String procesarRegistro(@RequestParam String email,
+                                   @RequestParam String clave,
+                                   @RequestParam String nombre,
+                                   @RequestParam String apellido,
+                                   @RequestParam String empresa,
+                                   @RequestParam String ciRuc,
+                                   @RequestParam(required = false) String ciudad,
+                                   @RequestParam(required = false) String pais,
+                                   @RequestParam(required = false) String departamento,
+                                   @RequestParam(required = false) String barrio,
+                                   @RequestParam(required = false) String lugarMantenimiento,
+                                   RedirectAttributes redirect) {
+        try {
+            Cliente cliente = Cliente.builder()
+                    .nombre(nombre)
+                    .apellido(apellido)
+                    .empresa(empresa)
+                    .ciRuc(ciRuc)
+                    .ciudad(ciudad)
+                    .pais(pais)
+                    .departamento(departamento)
+                    .barrio(barrio)
+                    .lugarMantenimiento(lugarMantenimiento)
+                    .build();
 
-        // Guardar (el servicio encripta la clave y guarda en cascada)
-        service.guardar(usuario);
+            Usuario usuario = new Usuario();
+            usuario.setEmail(email);
+            usuario.setClave(clave);
+            usuario.setRol("CLIENTE");
+            usuario.setEstado(true);
+            usuario.setCliente(cliente);
 
-        redirect.addFlashAttribute("exito", "Registro exitoso. Por favor inicia sesión.");
-        return "redirect:/usuarios/login";
-    } catch (Exception e) {
-        e.printStackTrace();
-        redirect.addFlashAttribute("error", "Error en el registro: " + e.getMessage());
-        return "redirect:/usuarios/registro";
+            service.guardar(usuario);
+
+            redirect.addFlashAttribute("exito", "Registro exitoso. Por favor inicia sesión.");
+            return "redirect:/usuarios/login";
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirect.addFlashAttribute("error", "Error en el registro: " + e.getMessage());
+            return "redirect:/usuarios/registro";
+        }
     }
-}
-    
+
     @GetMapping("/login")
     public String loginForm(Model model) {
         return "usuarios/login";
     }
-    
+
     @PostMapping("/procesarLogin")
-    public String procesarLogin(
-                               @RequestParam String email, 
-                               @RequestParam String clave,
-                               HttpSession session, 
-                               Model model,
-                               RedirectAttributes redirect) {
-        
+    public String procesarLogin(@RequestParam String email,
+                                @RequestParam String clave,
+                                HttpSession session,
+                                Model model,
+                                RedirectAttributes redirect) {
         Optional<Usuario> usuarioOpt = service.autenticar(email, clave);
-        if(usuarioOpt.isPresent()){
+        if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             session.setAttribute("usuario", usuario);
             redirect.addFlashAttribute("exito", "Bienvenido " + usuario.getEmail());
@@ -91,6 +92,7 @@ public String procesarRegistro(@RequestParam String email,
             return "usuarios/login";
         }
     }
+
     @GetMapping
     public String listarUsuarios(Model model, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
@@ -98,9 +100,9 @@ public String procesarRegistro(@RequestParam String email,
             return "redirect:/principal";
         }
         model.addAttribute("usuarios", service.findAll());
-        return "usuarios/lista"; // Crear esta vista
+        return "usuarios/lista";
     }
-    
+
     @GetMapping("/nuevo")
     public String nuevoUsuarioForm(Model model, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
@@ -108,9 +110,9 @@ public String procesarRegistro(@RequestParam String email,
             return "redirect:/principal";
         }
         model.addAttribute("usuario", new Usuario());
-        return "usuarios/formulario"; // Crear esta vista, similar a registro pero con todos los roles
+        return "usuarios/formulario";
     }
-    
+
     @PostMapping("/guardar")
     public String guardarUsuario(@ModelAttribute Usuario usuario, RedirectAttributes redirect, HttpSession session) {
         Usuario admin = (Usuario) session.getAttribute("usuario");
@@ -121,7 +123,7 @@ public String procesarRegistro(@RequestParam String email,
         redirect.addFlashAttribute("exito", "Usuario guardado");
         return "redirect:/usuarios";
     }
-    
+
     @GetMapping("/{id}/editar")
     public String editarUsuario(@PathVariable Long id, Model model, HttpSession session) {
         Usuario admin = (Usuario) session.getAttribute("usuario");
@@ -131,21 +133,22 @@ public String procesarRegistro(@RequestParam String email,
         model.addAttribute("usuario", service.findById(id).orElseThrow());
         return "usuarios/formulario";
     }
-    
+
     @PostMapping("/{id}/eliminar")
-public String eliminarUsuario(@PathVariable Long id, RedirectAttributes redirect, HttpSession session) {
-    Usuario admin = (Usuario) session.getAttribute("usuario");
-    if (admin == null || !"ADMIN".equals(admin.getRol())) {
-        return "redirect:/principal";
+    public String eliminarUsuario(@PathVariable Long id, RedirectAttributes redirect, HttpSession session) {
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || !"ADMIN".equals(admin.getRol())) {
+            return "redirect:/principal";
+        }
+        try {
+            service.eliminar(id);
+            redirect.addFlashAttribute("exito", "Usuario eliminado correctamente.");
+        } catch (RuntimeException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/usuarios";
     }
-    try {
-        service.eliminar(id);
-        redirect.addFlashAttribute("exito", "Usuario eliminado correctamente.");
-    } catch (RuntimeException e) {
-        redirect.addFlashAttribute("error", e.getMessage());
-    }
-    return "redirect:/usuarios";
-}    
+
     @GetMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirect) {
         session.invalidate();

@@ -192,12 +192,16 @@
             <div class="container-fluid">
                 <div class="user-card">
                     <h4 class="mb-4"><i class="bi bi-person-circle text-primary me-2"></i> Mi Perfil</h4>
-                   <div th:if="${usuario.cliente != null}">
-                    <p><strong>Nombre:</strong> <span th:text="${usuario.cliente.nombre} + ' ' + ${usuario.cliente.apellido}"></span></p>
-                    <p><strong>Empresa:</strong> <span th:text="${usuario.cliente.empresa}"></span></p>
-                     <p><strong>CI/RUC:</strong> <span th:text="${usuario.cliente.ciRuc}"></span></p>
-                     <p><strong>Ciudad:</strong> <span th:text="${usuario.cliente.ciudad}"></span></p>
-                     </div>
+                    <div th:if="${usuario.cliente != null}">
+                        <p><strong>Nombre:</strong> <span th:text="${usuario.cliente.nombre} + ' ' + ${usuario.cliente.apellido}"></span></p>
+                        <p><strong>Empresa:</strong> <span th:text="${usuario.cliente.empresa}"></span></p>
+                        <p th:if="${usuario.cliente.pais != null}"><strong>País:</strong> <span th:text="${usuario.cliente.pais}"></span></p>
+                        <p th:if="${usuario.cliente.departamento != null}"><strong>Departamento:</strong> <span th:text="${usuario.cliente.departamento}"></span></p>
+                        <p th:if="${usuario.cliente.ciudad != null}"><strong>Ciudad:</strong> <span th:text="${usuario.cliente.ciudad}"></span></p>
+                        <p th:if="${usuario.cliente.barrio != null}"><strong>Barrio:</strong> <span th:text="${usuario.cliente.barrio}"></span></p>
+                        <p><strong>CI/RUC:</strong> <span th:text="${usuario.cliente.ciRuc}"></span></p>
+                        
+                   </div>
                     <a th:href="@{/perfil/editar}" class="btn btn-primary mt-3">Editar Perfil</a>
                 </div>
                 

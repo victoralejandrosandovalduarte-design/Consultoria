@@ -24,4 +24,7 @@ public class Cliente {
     private String ciRuc;
     private String ciudad;
     private String lugarMantenimiento;
+    private String pais;
+    private String departamento;
+    private String barrio;
 }

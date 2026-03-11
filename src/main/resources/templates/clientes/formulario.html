@@ -1,74 +1,242 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head}">
-    <title th:text="${cliente.idCliente} ? 'Editar Cliente' : 'Nuevo Cliente'"></title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Consultoría TI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .register-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4361ee;
+        }
+    </style>
 </head>
 <body>
-    <nav th:replace="~{fragments :: menu}"></nav>
-    
-    <div class="container mt-4">
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title" th:text="${cliente.idCliente} ? 'Editar Cliente' : 'Nuevo Cliente'">
-                            Formulario de Cliente
-                        </h3>
+            <div class="col-md-6">
+                <div class="register-card p-5">
+                    <!-- Logo y título -->
+                    <div class="text-center mb-4">
+                        <div class="logo">🔧 TI Consult</div>
+                        <h2 class="mt-3">Crear Cuenta</h2>
+                        <p class="text-muted">Regístrate para gestionar tus servicios</p>
+                    </div>
+
+                    <!-- Mensajes -->
+                    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+                        <i class="bi bi-check-circle"></i> 
+                        <span th:text="${exito}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     
-                    <form th:action="@{/clientes}" th:object="${cliente}" method="post" class="card-body">
-                        <input type="hidden" th:field="*{idCliente}">
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nombre *</label>
-                                <input type="text" th:field="*{nombre}" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Apellido</label>
-                                <input type="text" th:field="*{apellido}" class="form-control">
-                            </div>
-                        </div>
-                        
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        <span th:text="${error}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- Formulario de registro -->
+                    <form th:action="@{/usuarios/procesarRegistro}" method="post">
+                        <!-- Campo oculto para el rol (fijo a CLIENTE) -->
+                        <input type="hidden" name="rol" value="CLIENTE">
+
+                        <!-- Email y contraseña -->
                         <div class="mb-3">
-                            <label class="form-label">Empresa *</label>
-                            <input type="text" th:field="*{empresa}" class="form-control" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">CI/RUC *</label>
-                            <input type="text" th:field="*{ciRuc}" class="form-control" required>
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="tu@email.com" required>
+                            <div class="form-text">Usa un email válido para tu cuenta.</div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Ciudad</label>
-                                <select th:field="*{ciudad}" class="form-select">
-                                    <option value="">Seleccionar ciudad</option>
-                                    <option value="Quito">Quito</option>
-                                    <option value="Guayaquil">Guayaquil</option>
-                                    <option value="Cuenca">Cuenca</option>
-                                    <option value="Ambato">Ambato</option>
-                                    <option value="Manta">Manta</option>
-                                </select>
+                                <label for="clave" class="form-label">Contraseña *</label>
+                                <input type="password" class="form-control" id="clave" name="clave" placeholder="Mínimo 6 caracteres" minlength="6" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Lugar de Mantenimiento</label>
-                                <input type="text" th:field="*{lugarMantenimiento}" class="form-control" 
-                                       placeholder="Ej: Oficina Central, Sucursal Norte">
+                                <label for="confirmarClave" class="form-label">Confirmar Contraseña *</label>
+                                <input type="password" class="form-control" id="confirmarClave" placeholder="Repite tu contraseña" required>
+                                <div id="passwordError" class="text-danger small"></div>
+                            </div>
+                        </div>
+
+                        <!-- Datos del cliente -->
+                        <h5 class="mb-3">Información del Cliente</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej: Juan" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="apellido" class="form-label">Apellido *</label>
+                                <input type="text" class="form-control" id="apellido" name="apellido" placeholder="Ej: Pérez" required>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a th:href="@{/clientes}" class="btn btn-secondary me-md-2">Cancelar</a>
-                            <button type="submit" class="btn btn-primary">
-                                <span th:text="${cliente.idCliente} ? 'Actualizar' : 'Guardar'"></span>
+                        <div class="mb-3">
+                            <label for="empresa" class="form-label">Empresa *</label>
+                            <input type="text" class="form-control" id="empresa" name="empresa" placeholder="Nombre de tu empresa" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="ciRuc" class="form-label">CI/RUC *</label>
+                            <input type="text" class="form-control" id="ciRuc" name="ciRuc" placeholder="Número de identificación" required>
+                        </div>
+
+                        <!-- País -->
+                        <div class="mb-3">
+                            <label for="pais" class="form-label">País *</label>
+                            <select class="form-select" id="pais" name="pais" required>
+                                <option value="">Selecciona un país</option>
+                                <option value="Paraguay">Paraguay</option>
+                                <option value="Argentina">Argentina</option>
+                            </select>
+                        </div>
+
+                        <!-- Departamento (dependiente del país) -->
+                        <div class="mb-3">
+                            <label for="departamento" class="form-label">Departamento *</label>
+                            <select class="form-select" id="departamento" name="departamento" required disabled>
+                                <option value="">Primero selecciona un país</option>
+                            </select>
+                        </div>
+
+                        <!-- Ciudad (dependiente del departamento) -->
+                        <div class="mb-3">
+                            <label for="ciudad" class="form-label">Ciudad *</label>
+                            <select class="form-select" id="ciudad" name="ciudad" required disabled>
+                                <option value="">Primero selecciona un departamento</option>
+                            </select>
+                        </div>
+
+                        <!-- Barrio (texto libre) -->
+                        <div class="mb-3">
+                            <label for="barrio" class="form-label">Barrio</label>
+                            <input type="text" class="form-control" id="barrio" name="barrio" placeholder="Ej: Centro">
+                        </div>
+
+                        <!-- Lugar de Mantenimiento (texto libre) -->
+                        <div class="mb-3">
+                            <label for="lugarMantenimiento" class="form-label">Lugar de Mantenimiento</label>
+                            <input type="text" class="form-control" id="lugarMantenimiento" name="lugarMantenimiento" placeholder="Ej: Oficina Central">
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Registrar Cuenta
                             </button>
+                            
+                            <a th:href="@{/usuarios/login}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver al Login
+                            </a>
                         </div>
                     </form>
+                    
+                    <!-- Información legal -->
+                    <div class="mt-4 pt-3 border-top">
+                        <p class="text-muted small">
+                            <i class="bi bi-info-circle"></i> 
+                            Al registrarte aceptas nuestros términos y condiciones de uso.
+                            Los datos personales son protegidos según la ley de privacidad.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validación de contraseñas
+        function validarPassword() {
+            const clave = document.getElementById('clave').value;
+            const confirmar = document.getElementById('confirmarClave').value;
+            const errorDiv = document.getElementById('passwordError');
+            if (confirmar && clave !== confirmar) {
+                errorDiv.textContent = 'Las contraseñas no coinciden';
+                return false;
+            } else {
+                errorDiv.textContent = '';
+                return true;
+            }
+        }
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (!validarPassword()) {
+                e.preventDefault();
+                alert('Por favor, asegúrate de que las contraseñas coincidan.');
+            }
+        });
+
+        // Datos de países, departamentos y ciudades
+        const data = {
+            "Paraguay": {
+                "Central": ["Asunción", "Luque", "San Lorenzo", "Capiatá", "Lambaré", "Fernando de la Mora", "Mariano Roque Alonso", "Ñemby", "Villa Elisa"],
+                "Alto Paraná": ["Ciudad del Este", "Presidente Franco", "Hernandarias", "Minga Guazú", "Santa Rita"],
+                "Asunción": ["Asunción"]
+            },
+            "Argentina": {
+                "Buenos Aires": ["La Plata", "Mar del Plata", "Bahía Blanca"],
+                "Córdoba": ["Córdoba", "Villa María"],
+                "Santa Fe": ["Rosario", "Santa Fe"]
+            }
+        };
+
+        const paisSelect = document.getElementById('pais');
+        const deptoSelect = document.getElementById('departamento');
+        const ciudadSelect = document.getElementById('ciudad');
+
+        paisSelect.addEventListener('change', function() {
+            const pais = this.value;
+            deptoSelect.innerHTML = '<option value="">Selecciona un departamento</option>';
+            ciudadSelect.innerHTML = '<option value="">Primero selecciona un departamento</option>';
+            ciudadSelect.disabled = true;
+
+            if (pais && data[pais]) {
+                Object.keys(data[pais]).forEach(depto => {
+                    const option = document.createElement('option');
+                    option.value = depto;
+                    option.textContent = depto;
+                    deptoSelect.appendChild(option);
+                });
+                deptoSelect.disabled = false;
+            } else {
+                deptoSelect.disabled = true;
+            }
+        });
+
+        deptoSelect.addEventListener('change', function() {
+            const pais = paisSelect.value;
+            const depto = this.value;
+            ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
+
+            if (pais && depto && data[pais] && data[pais][depto]) {
+                data[pais][depto].forEach(ciudad => {
+                    const option = document.createElement('option');
+                    option.value = ciudad;
+                    option.textContent = ciudad;
+                    ciudadSelect.appendChild(option);
+                });
+                ciudadSelect.disabled = false;
+            } else {
+                ciudadSelect.disabled = true;
+            }
+        });
+    </script>
 </body>
 </html>
