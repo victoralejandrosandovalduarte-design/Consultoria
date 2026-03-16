@@ -257,7 +257,16 @@
                                                   th:text="${s.estado}"></span>
                                         </td>
                                         <td th:text="${#temporals.format(s.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
-                                        <td th:text="${#numbers.formatDecimal(s.presupuesto, 0, 'COMMA', 0, 'POINT')} + ' ' + (s.moneda != null ? s.moneda : 'Gs.')"></td>
+                                        <td>
+                                            <th:block th:if="${s.presupuesto != null}">
+                                                <span th:text="${#numbers.formatDecimal(s.presupuesto, 0, 'COMMA', 0, 'POINT')}"></span>
+                                                <span th:if="${s.moneda != null}" th:text="' ' + ${s.moneda}"></span>
+                                                <span th:if="${s.moneda == null}" th:text="' Gs.'"></span>
+                                            </th:block>
+                                            <th:block th:if="${s.presupuesto == null}">
+                                                <span>-</span>
+                                            </th:block>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -269,7 +278,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <script th:inline="javascript">
         function updateTime() {
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -278,45 +287,59 @@
         setInterval(updateTime, 1000);
         updateTime();
 
-        // Datos para gráficos
-        const estadoLabels = [];
-        const estadoData = [];
-        <th:block th:each="entry : ${serviciosPorEstado}">
-            estadoLabels.push('[[${entry.key}]]');
-            estadoData.push([[${entry.value}]]);
-        </th:block>
-
-        const tecnicoLabels = [];
-        const tecnicoData = [];
-        <th:block th:each="entry : ${serviciosPorTecnico}">
-            tecnicoLabels.push('[[${entry.key}]]');
-            tecnicoData.push([[${entry.value}]]);
-        </th:block>
+        // Datos para gráficos (inyectados desde el controlador)
+        var estadoLabels = /*[[${estadoKeys}]]*/ [];
+        var estadoData = /*[[${estadoValues}]]*/ [];
+        var tecnicoLabels = /*[[${tecnicoKeys}]]*/ [];
+        var tecnicoData = /*[[${tecnicoValues}]]*/ [];
 
         // Gráfico de estados (torta)
-        new Chart(document.getElementById('chartEstado'), {
-            type: 'pie',
-            data: {
-                labels: estadoLabels,
-                datasets: [{
-                    data: estadoData,
-                    backgroundColor: ['#4361ee', '#3a0ca3', '#4cc9f0', '#f72585', '#06d6a0']
-                }]
-            }
-        });
+        if (document.getElementById('chartEstado') && estadoLabels.length > 0) {
+            new Chart(document.getElementById('chartEstado'), {
+                type: 'pie',
+                data: {
+                    labels: estadoLabels,
+                    datasets: [{
+                        data: estadoData,
+                        backgroundColor: ['#4361ee', '#3a0ca3', '#4cc9f0', '#f72585', '#06d6a0', '#ff9e00'],
+                        borderWidth: 2,
+                        borderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { enabled: true }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('chartEstado')?.parentNode.insertAdjacentHTML('beforeend', '<p class="text-muted text-center">No hay datos para mostrar</p>');
+        }
 
         // Gráfico de técnicos (barras)
-        new Chart(document.getElementById('chartTecnico'), {
-            type: 'bar',
-            data: {
-                labels: tecnicoLabels,
-                datasets: [{
-                    label: 'Cantidad',
-                    data: tecnicoData,
-                    backgroundColor: '#4361ee'
-                }]
-            }
-        });
+        if (document.getElementById('chartTecnico') && tecnicoLabels.length > 0) {
+            new Chart(document.getElementById('chartTecnico'), {
+                type: 'bar',
+                data: {
+                    labels: tecnicoLabels,
+                    datasets: [{
+                        label: 'Cantidad',
+                        data: tecnicoData,
+                        backgroundColor: '#4361ee'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        } else {
+            document.getElementById('chartTecnico')?.parentNode.insertAdjacentHTML('beforeend', '<p class="text-muted text-center">No hay datos para mostrar</p>');
+        }
     </script>
 </body>
 </html>

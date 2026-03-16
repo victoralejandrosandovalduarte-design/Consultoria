@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,6 +69,11 @@ public class ReporteController {
         double totalPresupuestosAceptados = servicios.stream()
                 .filter(s -> "COMPLETADO".equals(s.getEstado()) && s.getPresupuesto() != null)
                 .mapToDouble(Servicio::getPresupuesto).sum();
+        
+        List<String> estadoKeys = new ArrayList<>(serviciosPorEstado.keySet());
+        List<Long> estadoValues = new ArrayList<>(serviciosPorEstado.values());
+        List<String> tecnicoKeys = new ArrayList<>(serviciosPorTecnico.keySet());
+        List<Long> tecnicoValues = new ArrayList<>(serviciosPorTecnico.values());
 
         // Para los selectores de filtro
         model.addAttribute("tecnicos", tecnicoRepository.findAll());
@@ -86,6 +92,11 @@ public class ReporteController {
         model.addAttribute("estado", estado);
         model.addAttribute("tecnicoId", tecnicoId);
 
+        
+        model.addAttribute("estadoKeys", estadoKeys);
+        model.addAttribute("estadoValues", estadoValues);
+        model.addAttribute("tecnicoKeys", tecnicoKeys);
+        model.addAttribute("tecnicoValues", tecnicoValues);
         return "reportes";
     }
 
