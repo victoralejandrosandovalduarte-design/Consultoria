@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime; // voy a usar luego XD
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,16 @@ public Servicio findByIdWithDetails(Long id) {
         return servicioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
     }
-    
+    @Transactional(readOnly = true)
+    public List<Servicio> findByFilters(LocalDateTime inicio, LocalDateTime fin, String estado, Long tecnicoId) {
+    // Obtenemos todos (o usamos consultas específicas, pero por simplicidad filtramos en memoria)
+    return servicioRepository.findAllWithDetails().stream()
+        .filter(s -> inicio == null || (s.getFechaCreacion() != null && !s.getFechaCreacion().isBefore(inicio)))
+        .filter(s -> fin == null || (s.getFechaCreacion() != null && !s.getFechaCreacion().isAfter(fin)))
+        .filter(s -> estado == null || estado.equals(s.getEstado()))
+        .filter(s -> tecnicoId == null || (s.getTecnicoAsignado() != null && s.getTecnicoAsignado().getIdTecnico().equals(tecnicoId)))
+        .collect(Collectors.toList());
+}
     @Transactional
 public Servicio save(Servicio servicio) {
     generarNumeroOrden(servicio);
