@@ -52,8 +52,12 @@ public class ReporteController {
         LocalDateTime fin = (fechaFin != null) ? fechaFin.atTime(LocalTime.MAX) : null;
 
         // Obtener servicios filtrados
-        List<Servicio> servicios = servicioService.findByFilters(inicio, fin, estado, tecnicoId);
-
+System.out.println("Fecha inicio recibida: " + fechaInicio);
+System.out.println("Fecha fin recibida: " + fechaFin);
+System.out.println("inicio convertido: " + inicio);
+System.out.println("fin convertido: " + fin);
+List<Servicio> servicios = servicioService.findByFilters(inicio, fin, estado, tecnicoId);
+System.out.println("Cantidad de servicios encontrados: " + servicios.size());
         // Estadísticas
         Map<String, Long> serviciosPorEstado = servicios.stream()
                 .collect(Collectors.groupingBy(Servicio::getEstado, Collectors.counting()));

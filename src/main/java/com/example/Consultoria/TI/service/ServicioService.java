@@ -37,15 +37,15 @@ public Servicio findByIdWithDetails(Long id) {
         return servicioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
     }
-    @Transactional(readOnly = true)
-    public List<Servicio> findByFilters(LocalDateTime inicio, LocalDateTime fin, String estado, Long tecnicoId) {
-    // Obtenemos todos (o usamos consultas específicas, pero por simplicidad filtramos en memoria)
-    return servicioRepository.findAllWithDetails().stream()
-        .filter(s -> inicio == null || (s.getFechaCreacion() != null && !s.getFechaCreacion().isBefore(inicio)))
-        .filter(s -> fin == null || (s.getFechaCreacion() != null && !s.getFechaCreacion().isAfter(fin)))
-        .filter(s -> estado == null || estado.equals(s.getEstado()))
-        .filter(s -> tecnicoId == null || (s.getTecnicoAsignado() != null && s.getTecnicoAsignado().getIdTecnico().equals(tecnicoId)))
-        .collect(Collectors.toList());
+@Transactional(readOnly = true)
+public List<Servicio> findByFilters(LocalDateTime inicio, LocalDateTime fin, String estado, Long tecnicoId) {
+    // Obtener servicios filtrados mediante consulta nativa
+    List<Servicio> serviciosFiltrados = servicioRepository.findByFiltersNative(inicio, fin, estado, tecnicoId);
+    System.out.println("Servicios encontrados con filtros nativos: " + serviciosFiltrados.size());
+    // Cargar todos los detalles para evitar LazyInitializationException
+    return serviciosFiltrados.stream()
+            .map(s -> findByIdWithDetails(s.getIdServicio()))
+            .collect(Collectors.toList());
 }
     @Transactional
 public Servicio save(Servicio servicio) {

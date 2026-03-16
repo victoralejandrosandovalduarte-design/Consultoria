@@ -2,6 +2,7 @@
 package com.example.Consultoria.TI.repository;
 
 import com.example.Consultoria.TI.modelo.Servicio;
+import java.time.LocalDateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,6 +27,8 @@ public interface ServicioRepository extends JpaRepository<Servicio, Long> {
            "LEFT JOIN FETCH com.usuario u " +
            "WHERE s.cliente.idCliente = :idCliente " +
            "ORDER BY s.fechaHoraAgendamiento DESC")
+            
+            
     List<Servicio> findByClienteIdClienteWithDetails(@Param("idCliente") Long idCliente);
     // Para técnico (soporte)
     @Query("SELECT DISTINCT s FROM Servicio s " +
@@ -61,4 +64,13 @@ long countByClienteIdCliente(@Param("idCliente") Long idCliente);
        "LEFT JOIN FETCH s.tecnicoAsignado " +
        "WHERE s.idServicio = :id")
 Optional<Servicio> findByIdWithDetails(@Param("id") Long id);
+@Query(value = "SELECT * FROM servicio WHERE " +
+       "(:inicio IS NULL OR fecha_creacion >= :inicio) AND " +
+       "(:fin IS NULL OR fecha_creacion <= :fin) AND " +
+       "(:estado IS NULL OR estado = :estado) AND " +
+       "(:tecnicoId IS NULL OR id_tecnico = :tecnicoId)", nativeQuery = true)
+List<Servicio> findByFiltersNative(@Param("inicio") LocalDateTime inicio,
+                                    @Param("fin") LocalDateTime fin,
+                                    @Param("estado") String estado,
+                                    @Param("tecnicoId") Long tecnicoId);
 }
