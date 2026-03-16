@@ -35,29 +35,28 @@ public class ReporteController {
     private final TecnicoRepository tecnicoRepository;
 
     @GetMapping
-    public String verReportes(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
-            @RequestParam(required = false) String estado,
-            @RequestParam(required = false) Long tecnicoId,
-            HttpSession session, Model model) {
+public String verReportes(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+        @RequestParam(required = false) String estado,
+        @RequestParam(required = false) Long tecnicoId,
+        HttpSession session, Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || !"ADMIN".equals(usuario.getRol())) {
-            return "redirect:/principal";
-        }
-
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
+    if (usuario == null || !"ADMIN".equals(usuario.getRol())) {
+        return "redirect:/principal";
+        
+    }
+// Convertir cadena vacía a null para el filtro de estado
+    if (estado != null && estado.isEmpty()) {
+        estado = null;
+    }
         // Convertir fechas a LocalDateTime (inicio del día a fin del día)
-        LocalDateTime inicio = (fechaInicio != null) ? fechaInicio.atStartOfDay() : null;
-        LocalDateTime fin = (fechaFin != null) ? fechaFin.atTime(LocalTime.MAX) : null;
+ LocalDateTime inicio = (fechaInicio != null) ? fechaInicio.atStartOfDay() : null;
+    LocalDateTime fin = (fechaFin != null) ? fechaFin.atTime(LocalTime.MAX) : null;
 
-        // Obtener servicios filtrados
-System.out.println("Fecha inicio recibida: " + fechaInicio);
-System.out.println("Fecha fin recibida: " + fechaFin);
-System.out.println("inicio convertido: " + inicio);
-System.out.println("fin convertido: " + fin);
-List<Servicio> servicios = servicioService.findByFilters(inicio, fin, estado, tecnicoId);
-System.out.println("Cantidad de servicios encontrados: " + servicios.size());
+    // Obtener servicios filtrados
+    List<Servicio> servicios = servicioService.findByFilters(inicio, fin, estado, tecnicoId);
         // Estadísticas
         Map<String, Long> serviciosPorEstado = servicios.stream()
                 .collect(Collectors.groupingBy(Servicio::getEstado, Collectors.counting()));
