@@ -6,6 +6,7 @@ import com.example.Consultoria.TI.repository.ClienteRepository;
 import com.example.Consultoria.TI.repository.ServicioRepository;
 import com.example.Consultoria.TI.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,13 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
     
     private final UsuarioRepository usuarioRepository;
     private final ClienteRepository clienteRepository;
-    private final BCryptPasswordEncoder passwordEncoder; // Inyectar el bean de BCrypt
+    private final BCryptPasswordEncoder passwordEncoder;
     private final ServicioRepository servicioRepository;
     public List<Usuario> findAll() {
         return usuarioRepository.findAll();
@@ -35,6 +37,12 @@ public Usuario guardar(Usuario usuario) {
     // Validar email único
     if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
         throw new RuntimeException("El email ya está registrado");
+    }
+
+    // Si el usuario tiene un cliente nuevo (sin ID), guardarlo primero
+    if (usuario.getCliente() != null && usuario.getCliente().getIdCliente() == null) {
+        Cliente clienteGuardado = clienteRepository.save(usuario.getCliente());
+        usuario.setCliente(clienteGuardado);
     }
 
     // Encriptar contraseña
@@ -59,12 +67,20 @@ public void eliminar(Long id) {
     usuarioRepository.delete(usuario);
 }
     
+    public boolean verificarClave(String clavePlana, String hashAlmacenado) {
+        return passwordEncoder.matches(clavePlana, hashAlmacenado);
+    }
+
     public Optional<Usuario> autenticar(String email, String clave) {
+        log.info(">>> autenticar: buscando email='{}'", email);
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+        log.info(">>> autenticar: findByEmail presente={}", usuarioOpt.isPresent());
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            System.out.println("Clave almacenada: " + usuario.getClave()); // Log para depuración
-            if (passwordEncoder.matches(clave, usuario.getClave())) {
+            log.info(">>> autenticar: hash almacenado='{}'", usuario.getClave());
+            boolean matches = passwordEncoder.matches(clave, usuario.getClave());
+            log.info(">>> autenticar: BCrypt matches={}", matches);
+            if (matches) {
                 return usuarioOpt;
             }
         }

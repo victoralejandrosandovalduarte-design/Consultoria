@@ -28,7 +28,7 @@ public class Usuario {
 
     private Boolean estado;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "id_cliente")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

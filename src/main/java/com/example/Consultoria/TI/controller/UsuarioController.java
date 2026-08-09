@@ -79,15 +79,35 @@ public String procesarRegistro(@RequestParam String email,
                                HttpSession session, 
                                Model model,
                                RedirectAttributes redirect) {
-        
-        Optional<Usuario> usuarioOpt = service.autenticar(email, clave);
-        if(usuarioOpt.isPresent()){
-            Usuario usuario = usuarioOpt.get();
+        try {
+            // Buscar todos los usuarios y encontrar por email manualmente
+            // para evitar cualquier problema con el query derivado
+            Usuario usuario = service.findAll().stream()
+                .filter(u -> email != null && email.equalsIgnoreCase(u.getEmail()))
+                .findFirst()
+                .orElse(null);
+
+            if (usuario == null) {
+                model.addAttribute("error", "Credenciales inválidas");
+                return "usuarios/login";
+            }
+
+            if (!Boolean.TRUE.equals(usuario.getEstado())) {
+                model.addAttribute("error", "Cuenta desactivada");
+                return "usuarios/login";
+            }
+
+            if (!service.verificarClave(clave, usuario.getClave())) {
+                model.addAttribute("error", "Credenciales inválidas");
+                return "usuarios/login";
+            }
+
             session.setAttribute("usuario", usuario);
             redirect.addFlashAttribute("exito", "Bienvenido " + usuario.getEmail());
             return "redirect:/principal";
-        } else {
-            model.addAttribute("error", "Credenciales inválidas");
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Error interno: " + e.getMessage());
             return "usuarios/login";
         }
     }
