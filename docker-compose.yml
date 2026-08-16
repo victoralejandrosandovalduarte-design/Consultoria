@@ -14,10 +14,10 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
+      test: ["CMD", "mysqladmin", "ping", "-uAdmin", "-p1234"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   app:
     build: .
@@ -28,9 +28,19 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/soporte_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: Admin
       SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create
+      SPRING_SQL_INIT_MODE: always
+
       # First-run admin credentials — override these before deploying!
+      # CORREGIDO: Mapeo exacto para Spring Boot (las mayúsculas con guiones bajos equivalen a puntos)
       ADMIN_EMAIL: admin@consultoria.com
       ADMIN_PASSWORD: admin123
+      SOPORTE_EMAIL: soporte@consultoria.com
+      SOPORTE_PASSWORD: soporte123
+      CLIENTE_EMAIL: cliente@ejemplo.com
+      CLIENTE_PASSWORD: cliente123
     depends_on:
       mysql:
         condition: service_healthy

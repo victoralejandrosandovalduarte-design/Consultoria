@@ -24,7 +24,7 @@ public class DataInitializer {
     @Value("${admin.email:admin@consultoria.com}")
     private String adminEmail;
 
-    @Value("${admin.password:admin123}")
+    @Value("${admin.password:123456}")
     private String adminPassword;
 
     // NUEVOS: Credenciales Soporte
